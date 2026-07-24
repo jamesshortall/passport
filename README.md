@@ -12,7 +12,8 @@ Live target: `passport.traveltechnician.info`
 - **Next.js 14 (App Router)** + React + TypeScript
 - **Tailwind CSS**
 - **Supabase** — Postgres, Auth, Edge Functions, Row Level Security
-- Deploy target: **Vercel**
+- Deploy target: **Ionos VPS** (Node + nginx + PM2) — see
+  [`docs/DEPLOY-VPS.md`](docs/DEPLOY-VPS.md)
 
 ## Key architecture decision
 
