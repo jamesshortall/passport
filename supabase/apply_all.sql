@@ -1,7 +1,7 @@
 -- ==========================================================================
 -- AppPassport — combined migration script (apply once, top to bottom).
 -- Paste into the Supabase SQL Editor for the AppPassport project and Run.
--- Equivalent to running migrations/0001..0004 in order.
+-- Equivalent to running migrations/0001..0005 in order.
 -- ==========================================================================
 
 -- ----- migrations/0001_schema.sql -----
@@ -373,6 +373,7 @@ create trigger on_auth_user_created
 create or replace function public.touch_country_last_updated()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.last_updated = now();
@@ -389,6 +390,7 @@ create trigger trg_country_touch
 create or replace function public.touch_country_app_verified()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.last_verified_at = now();
@@ -616,5 +618,30 @@ values
   ((select id from countries where slug='liberia'), (select id from app_categories where name='Internet Access'),
    'Mobile data', 'partial', 'Local SIM (Orange / Lonestar)', 'Roaming is expensive and patchy. A local prepaid SIM is the practical option for data.',
    'before_you_land', 'works_with_caveats', null);
+
+
+-- ----- migrations/0005_security_hardening.sql -----
+-- ===========================================================================
+-- AppPassport — security hardening (Supabase advisor follow-up)
+--
+-- PostgREST exposes every function in the `public` schema as an RPC endpoint.
+-- These grants ensure privileged functions can't be called from the public API.
+-- ===========================================================================
+
+-- promote_to_admin must NOT be callable via the public REST API — otherwise any
+-- anon/authenticated caller could escalate themselves to admin. Only the table
+-- owner (SQL editor) or service_role should ever run it.
+revoke all on function public.promote_to_admin(text) from public;
+revoke all on function public.promote_to_admin(text) from anon;
+revoke all on function public.promote_to_admin(text) from authenticated;
+
+-- handle_new_user is a trigger function; it never needs to be RPC-callable.
+-- Triggers run as the table owner, so revoking EXECUTE does not affect them.
+revoke all on function public.handle_new_user() from public;
+revoke all on function public.handle_new_user() from anon;
+revoke all on function public.handle_new_user() from authenticated;
+
+-- Note: is_admin() / is_approved() intentionally remain executable — RLS policy
+-- evaluation requires it, and they only reveal the calling user's own status.
 
 

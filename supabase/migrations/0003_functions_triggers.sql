@@ -28,6 +28,7 @@ create trigger on_auth_user_created
 create or replace function public.touch_country_last_updated()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.last_updated = now();
@@ -44,6 +45,7 @@ create trigger trg_country_touch
 create or replace function public.touch_country_app_verified()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.last_verified_at = now();
