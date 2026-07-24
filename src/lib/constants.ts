@@ -7,8 +7,7 @@ export const SITE = {
   brand: {
     main: "https://www.traveltechnician.info",
     blog: "https://blog.traveltechnician.info",
-    // Placeholder — Jim will supply the real Cardmaster URL + pitch copy.
-    cardmaster: "https://www.traveltechnician.info",
+    cardmaster: "https://cardmaster.traveltechnician.info",
   },
 };
 
