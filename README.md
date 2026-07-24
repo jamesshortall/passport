@@ -13,7 +13,7 @@ Live target: `passport.traveltechnician.info`
 - **Tailwind CSS**
 - **Supabase** — Postgres, Auth, Edge Functions, Row Level Security
 - Deploy target: **Ionos VPS** (Node + nginx + PM2) — see
-  [`docs/DEPLOY-VPS.md`](docs/DEPLOY-VPS.md)
+  [`docs/DEPLOY-VPS.md`](docs/DEPLOY-VPS.md). Run it locally first: [`docs/LOCAL-DEV.md`](docs/LOCAL-DEV.md)
 
 ## Key architecture decision
 
