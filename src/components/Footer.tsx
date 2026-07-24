@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SITE } from "@/lib/constants";
 
 export default function Footer() {
@@ -7,10 +8,16 @@ export default function Footer() {
       <div className="mx-auto max-w-5xl px-4 py-10 text-sm">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
-            <div className="flex items-center gap-2 font-bold text-brand-navy">
-              <span aria-hidden>🛂</span> AppPassport
-            </div>
-            <p className="mt-2 text-slate-500">{SITE.tagline}</p>
+            <Image
+              src="/brand/tt-logo.png"
+              alt="The Travel Technician"
+              width={220}
+              height={64}
+              className="h-12 w-auto object-contain"
+            />
+            <p className="mt-3 text-slate-500">
+              <span className="font-semibold text-brand-navy">AppPassport</span> — {SITE.tagline}
+            </p>
             <p className="mt-3 text-xs text-slate-400">
               Part of{" "}
               <a

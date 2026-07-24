@@ -8,12 +8,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // The Travel Technician brand: deep navy + warm accent.
+        // The Travel Technician brand: deep navy + teal, with gold for Cardmaster.
         brand: {
           navy: "#0f2a43",
           navylight: "#1c3d5c",
-          accent: "#f4a259",
-          accentdark: "#e08b3c",
+          // `accent` now maps to the brand teal so existing utility classes
+          // (brand-accent / brand-accentdark) pick up the on-logo colour.
+          accent: "#1f8fa8",
+          accentdark: "#17708a",
+          teal: "#1f8fa8",
+          tealdark: "#17708a",
+          teallight: "#3bb0c9",
+          gold: "#c8a24a",
+          golddark: "#a9862f",
           paper: "#f7f5f0",
         },
         severity: {

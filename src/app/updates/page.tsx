@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getRecentChanges } from "@/lib/queries";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import Flag from "@/components/Flag";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Recent updates" };
@@ -30,13 +31,13 @@ export default async function UpdatesPage() {
             return (
               <li key={c.id} className="rounded-xl border border-slate-200 bg-white p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm text-slate-800">
+                  <p className="flex flex-wrap items-center gap-1.5 text-sm text-slate-800">
                     {country && (
-                      <a href={`/country/${country.slug}`} className="font-semibold text-brand-navy hover:underline">
-                        {country.flag_emoji} {country.name}
+                      <a href={`/country/${country.slug}`} className="inline-flex items-center gap-1.5 font-semibold text-brand-navy hover:underline">
+                        <Flag emoji={country.flag_emoji} size="1rem" /> {country.name}
                       </a>
                     )}{" "}
-                    {c.change_summary}
+                    <span>{c.change_summary}</span>
                   </p>
                   <time className="shrink-0 text-xs text-slate-400">
                     {new Date(c.changed_at).toLocaleDateString()}

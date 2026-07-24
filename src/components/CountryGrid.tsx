@@ -27,23 +27,25 @@ export default function CountryGrid({ countries }: { countries: Country[] }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search a country or region…"
-          className="w-full rounded-full border border-slate-300 bg-white px-4 py-2 text-sm focus:border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-accent/30"
+          className="w-full rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
           aria-label="Search countries"
         />
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        {/* Region chips sit UNDERNEATH the search and wrap, so they never
+            collide with the sidebar/CTA on the right. */}
+        <div className="flex flex-wrap gap-2">
           {regions.map((r) => (
             <button
               key={r}
               onClick={() => setRegion(r)}
-              className={`shrink-0 rounded-full border px-3 py-1 text-sm ${
+              className={`rounded-full border px-3 py-1 text-sm transition ${
                 region === r
                   ? "border-brand-navy bg-brand-navy text-white"
-                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                  : "border-slate-300 bg-white text-slate-600 hover:border-brand-teal hover:text-brand-navy"
               }`}
             >
               {r}

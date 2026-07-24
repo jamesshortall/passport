@@ -11,6 +11,7 @@ import CategorySection from "@/components/CategorySection";
 import CardmasterCTA from "@/components/CardmasterCTA";
 import SaveCountryButton from "@/components/SaveCountryButton";
 import OfflineBadge from "@/components/OfflineBadge";
+import CountryHero from "@/components/CountryHero";
 
 // Server-rendered per request — NO generateStaticParams, so a country
 // published in Supabase is live immediately with no redeploy.
@@ -58,25 +59,22 @@ export default async function CountryPage({
         ← All countries
       </Link>
 
-      <div className="mt-3 flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="text-4xl" aria-hidden>
-            {country.flag_emoji || "🏳️"}
-          </span>
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-brand-navy">
-              {country.name}
-            </h1>
-            {country.region && (
-              <p className="text-sm text-slate-500">{country.region}</p>
-            )}
-          </div>
-        </div>
+      <div className="mt-3">
+        <CountryHero
+          name={country.name}
+          region={country.region}
+          flagEmoji={country.flag_emoji}
+          imageUrl={country.hero_image_url}
+          hasAlert={!!country.country_alert}
+        />
+      </div>
+
+      <div className="mt-3 flex items-center justify-end">
         <SaveCountryButton countryId={country.id} />
       </div>
 
       {/* Last verified + prominent link to the accuracy disclaimer */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
         <span>Last verified: {formatDate(verifiedAt)}</span>
         <OfflineBadge />
         <span aria-hidden>·</span>

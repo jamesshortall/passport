@@ -21,6 +21,7 @@ export interface Country {
   status: CountryStatus;
   country_alert: string | null;
   country_alert_detail: string | null;
+  hero_image_url: string | null;
   last_updated: string;
   created_at: string;
 }

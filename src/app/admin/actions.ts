@@ -70,6 +70,27 @@ export async function setCountryStatus(
   return { ok: true };
 }
 
+/** Set (or clear) a country's hero image URL. Goes live immediately. */
+export async function setCountryHeroImage(
+  countryId: string,
+  url: string
+): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, message: "Not authorized" };
+
+  const trimmed = url.trim();
+  const supabase = createSupabaseServerClient();
+  const { error } = await supabase
+    .from("countries")
+    .update({ hero_image_url: trimmed || null })
+    .eq("id", countryId);
+
+  if (error) return { ok: false, message: error.message };
+  revalidatePath("/admin");
+  revalidatePath(`/country`);
+  return { ok: true, message: trimmed ? "Hero image updated" : "Hero image cleared" };
+}
+
 /** Mark a user report as reviewed. */
 export async function resolveReport(reportId: string): Promise<ActionResult> {
   const admin = await requireAdmin();

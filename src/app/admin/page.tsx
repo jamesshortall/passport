@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import AdminButton from "@/components/admin/AdminButton";
 import GenerateDraftForm from "@/components/admin/GenerateDraftForm";
+import HeroImageInput from "@/components/admin/HeroImageInput";
 import { reviewProfile, setCountryStatus, resolveReport } from "./actions";
 import type { Country, Profile, ReportRow } from "@/lib/types";
 
@@ -114,41 +115,44 @@ export default async function AdminPage() {
         <h2 className="mb-3 text-lg font-bold text-brand-navy">Countries</h2>
         <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
           {allCountries.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-3 p-3">
-              <div className="flex items-center gap-2">
-                <span aria-hidden>{c.flag_emoji}</span>
-                <span className="text-sm font-medium text-slate-800">{c.name}</span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs ${
-                    c.status === "published"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  {c.status}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {c.status === "published" ? (
-                  <>
-                    <Link href={`/country/${c.slug}`} className="text-sm text-brand-navy underline">
-                      View
-                    </Link>
+            <li key={c.id} className="flex flex-col gap-2 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span aria-hidden>{c.flag_emoji}</span>
+                  <span className="text-sm font-medium text-slate-800">{c.name}</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      c.status === "published"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {c.status}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {c.status === "published" ? (
+                    <>
+                      <Link href={`/country/${c.slug}`} className="text-sm text-brand-navy underline">
+                        View
+                      </Link>
+                      <AdminButton
+                        action={setCountryStatus.bind(null, c.id, "draft")}
+                        label="Unpublish"
+                        className="border border-slate-300 text-slate-600 hover:bg-slate-50"
+                      />
+                    </>
+                  ) : (
                     <AdminButton
-                      action={setCountryStatus.bind(null, c.id, "draft")}
-                      label="Unpublish"
-                      className="border border-slate-300 text-slate-600 hover:bg-slate-50"
+                      action={setCountryStatus.bind(null, c.id, "published")}
+                      label="Publish"
+                      className="bg-brand-navy text-white hover:bg-brand-navylight"
+                      confirm="Publish this country? It will go live immediately."
                     />
-                  </>
-                ) : (
-                  <AdminButton
-                    action={setCountryStatus.bind(null, c.id, "published")}
-                    label="Publish"
-                    className="bg-brand-navy text-white hover:bg-brand-navylight"
-                    confirm="Publish this country? It will go live immediately."
-                  />
-                )}
+                  )}
+                </div>
               </div>
+              <HeroImageInput countryId={c.id} initial={c.hero_image_url} />
             </li>
           ))}
         </ul>

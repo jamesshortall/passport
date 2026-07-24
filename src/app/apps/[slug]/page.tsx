@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import SeverityTag from "@/components/SeverityTag";
+import Flag from "@/components/Flag";
 import type { Severity } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -60,9 +61,9 @@ export default async function AppDetailPage({
               <div className="flex items-center justify-between gap-3">
                 <Link
                   href={`/country/${r.countries.slug}`}
-                  className="font-semibold text-brand-navy hover:underline"
+                  className="inline-flex items-center gap-2 font-semibold text-brand-navy hover:underline"
                 >
-                  {r.countries.flag_emoji} {r.countries.name}
+                  <Flag emoji={r.countries.flag_emoji} size="1.25rem" /> {r.countries.name}
                 </Link>
                 <SeverityTag severity={r.severity as Severity} />
               </div>
