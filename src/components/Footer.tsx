@@ -49,6 +49,11 @@ export default function Footer() {
                   Also check out Cardmaster →
                 </a>
               </li>
+              <li>
+                <Link href="/support" className="hover:text-brand-navy">
+                  Support Center
+                </Link>
+              </li>
             </ul>
           </div>
 

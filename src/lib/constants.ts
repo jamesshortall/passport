@@ -4,6 +4,7 @@ export const SITE = {
   name: "AppPassport",
   tagline: "Which apps actually work where you're going.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://passport.traveltechnician.info",
+  supportEmail: "support@traveltechnician.info",
   brand: {
     main: "https://www.traveltechnician.info",
     blog: "https://blog.traveltechnician.info",

@@ -27,6 +27,9 @@ export default function Header() {
           <Link href="/updates" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
             Updates
           </Link>
+          <Link href="/support" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
+            Support
+          </Link>
           <a
             href={SITE.brand.main}
             target="_blank"
