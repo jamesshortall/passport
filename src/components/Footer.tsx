@@ -82,12 +82,14 @@ export default async function Footer() {
             </Link>
             .
           </p>
-          <Link
-            href="/admin"
-            className="shrink-0 text-slate-400 hover:text-brand-navy"
-          >
-            Admin login
-          </Link>
+          <div className="flex shrink-0 items-center gap-4">
+            <Link href="/about" className="text-slate-400 hover:text-brand-navy">
+              About
+            </Link>
+            <Link href="/admin" className="text-slate-400 hover:text-brand-navy">
+              Admin login
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

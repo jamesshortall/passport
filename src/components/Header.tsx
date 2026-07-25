@@ -22,17 +22,20 @@ export default async function Header() {
           <Link href="/" className="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy">
             Home
           </Link>
-          <Link href="/apps" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
+          <Link href="/about" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
+            About
+          </Link>
+          <Link href="/apps" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy lg:inline">
             Apps
           </Link>
-          <Link href="/plan" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
+          <Link href="/plan" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy lg:inline">
             Trip Planner
           </Link>
-          <Link href="/updates" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
+          <Link href="/updates" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy lg:inline">
             Updates
           </Link>
           {user && (
-            <Link href="/support" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
+            <Link href="/support" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy lg:inline">
               Support
             </Link>
           )}
