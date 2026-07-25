@@ -59,6 +59,17 @@ export default async function CountryPage({
         ← All countries
       </Link>
 
+      {country.status === "draft" && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
+          <span aria-hidden>🔒</span>
+          <span className="font-semibold">Draft preview</span>
+          <span className="text-amber-800">
+            — this country isn't public yet. Review the content below, then publish it from the{" "}
+            <Link href="/admin" className="underline">admin panel</Link>.
+          </span>
+        </div>
+      )}
+
       <div className="mt-3">
         <CountryHero
           name={country.name}

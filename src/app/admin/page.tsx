@@ -131,17 +131,19 @@ export default async function AdminPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Link
+                    href={`/country/${c.slug}`}
+                    target="_blank"
+                    className="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium text-brand-navy hover:bg-slate-50"
+                  >
+                    {c.status === "published" ? "View ↗" : "Preview ↗"}
+                  </Link>
                   {c.status === "published" ? (
-                    <>
-                      <Link href={`/country/${c.slug}`} className="text-sm text-brand-navy underline">
-                        View
-                      </Link>
-                      <AdminButton
-                        action={setCountryStatus.bind(null, c.id, "draft")}
-                        label="Unpublish"
-                        className="border border-slate-300 text-slate-600 hover:bg-slate-50"
-                      />
-                    </>
+                    <AdminButton
+                      action={setCountryStatus.bind(null, c.id, "draft")}
+                      label="Unpublish"
+                      className="border border-slate-300 text-slate-600 hover:bg-slate-50"
+                    />
                   ) : (
                     <AdminButton
                       action={setCountryStatus.bind(null, c.id, "published")}

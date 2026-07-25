@@ -35,6 +35,8 @@ Cover these categories where relevant: ${CATEGORIES.join(", ")}.
 
 Return a JSON object with this exact shape:
 {
+  "flag_emoji": string,                     // the country's flag emoji, e.g. "🇻🇳"
+  "region": string,                         // continent/region: one of "Africa", "Asia", "Europe", "North America", "South America", "Oceania", "Middle East"
   "country_alert": string | null,          // short prominent warning for the whole country, or null
   "country_alert_detail": string | null,   // optional longer paragraph, or null
   "apps": [
@@ -157,6 +159,8 @@ Deno.serve(async (req) => {
         name: country_name,
         slug,
         status: "draft",
+        flag_emoji: parsed.flag_emoji ?? null,
+        region: parsed.region ?? null,
         country_alert: parsed.country_alert ?? null,
         country_alert_detail: parsed.country_alert_detail ?? null,
       })
