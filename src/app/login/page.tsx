@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -8,14 +8,26 @@ import { SITE } from "@/lib/constants";
 
 type Mode = "signin" | "signup";
 
+// Only allow same-site relative redirects to avoid open-redirect issues.
+function safeNext(raw: string | null): string {
+  if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/account";
+}
+
 export default function LoginPage() {
   const router = useRouter();
+  const [next, setNext] = useState("/account");
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setNext(safeNext(params.get("next")));
+  }, []);
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -39,7 +51,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
       if (error) return setErr(error.message);
-      router.push("/account");
+      router.push(next);
       router.refresh();
     }
   }
@@ -49,7 +61,7 @@ export default function LoginPage() {
     const supabase = createSupabaseBrowserClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${SITE.url}/auth/callback` },
+      options: { redirectTo: `${SITE.url}/auth/callback?next=${encodeURIComponent(next)}` },
     });
     if (error) setErr(error.message);
   }

@@ -1,6 +1,15 @@
 import { createSupabaseServerClient } from "./supabase/server";
 import type { Profile } from "./types";
 
+/** The signed-in auth user (or null). Lightweight — no profile join. */
+export async function getSessionUser() {
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+}
+
 /** The signed-in user's profile, or null if not signed in. */
 export async function getCurrentProfile(): Promise<Profile | null> {
   const supabase = createSupabaseServerClient();

@@ -1,8 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { SITE } from "@/lib/constants";
+import { getSessionUser } from "@/lib/auth";
 
-export default function Footer() {
+export default async function Footer() {
+  const user = await getSessionUser();
+
   return (
     <footer className="mt-16 border-t border-slate-200 bg-white">
       <div className="mx-auto max-w-5xl px-4 py-10 text-sm">
@@ -49,11 +52,13 @@ export default function Footer() {
                   Also check out Cardmaster →
                 </a>
               </li>
-              <li>
-                <Link href="/support" className="hover:text-brand-navy">
-                  Support Center
-                </Link>
-              </li>
+              {user && (
+                <li>
+                  <Link href="/support" className="hover:text-brand-navy">
+                    Support Center
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 

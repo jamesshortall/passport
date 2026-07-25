@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import { getSessionUser } from "@/lib/auth";
 
-export default function Header() {
+export default async function Header() {
+  const user = await getSessionUser();
+
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5">
@@ -27,9 +30,11 @@ export default function Header() {
           <Link href="/updates" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
             Updates
           </Link>
-          <Link href="/support" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
-            Support
-          </Link>
+          {user && (
+            <Link href="/support" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
+              Support
+            </Link>
+          )}
           <a
             href={SITE.brand.main}
             target="_blank"
