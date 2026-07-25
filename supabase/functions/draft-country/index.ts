@@ -81,6 +81,34 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // --- Service-role client (bypasses RLS for the admin check + inserts) --
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // --- Gate: caller must be an approved admin (this costs OpenAI credits) --
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const userClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const {
+      data: { user },
+    } = await userClient.auth.getUser();
+    if (!user) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, approval_status")
+      .eq("user_id", user.id)
+      .single();
+    if (!profile || profile.role !== "admin" || profile.approval_status !== "approved") {
+      return Response.json({ error: "Admin access required" }, { status: 403 });
+    }
+
     const { country_name } = await req.json();
     if (!country_name) {
       return Response.json({ error: "country_name required" }, { status: 400 });
@@ -121,12 +149,7 @@ Deno.serve(async (req) => {
     }
     const parsed = JSON.parse(match[0]);
 
-    // --- Insert as a DRAFT country via service role -----------------------
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
+    // --- Insert as a DRAFT country via the service-role client above -------
     const slug = slugify(country_name);
     const { data: country, error: cErr } = await supabase
       .from("countries")
