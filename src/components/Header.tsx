@@ -26,6 +26,9 @@ export default function Header() {
         </Link>
 
         <nav className="flex items-center gap-1 text-sm sm:gap-4">
+          <Link href="/" className="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy">
+            Home
+          </Link>
           <Link href="/apps" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy sm:inline">
             Apps
           </Link>

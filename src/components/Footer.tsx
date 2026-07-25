@@ -11,9 +11,9 @@ export default function Footer() {
             <Image
               src="/brand/tt-logo.png"
               alt="The Travel Technician"
-              width={220}
-              height={64}
-              className="h-12 w-auto object-contain"
+              width={300}
+              height={88}
+              className="h-20 w-auto object-contain"
             />
             <p className="mt-3 text-slate-500">
               <span className="font-semibold text-brand-navy">AppPassport</span> — {SITE.tagline}
