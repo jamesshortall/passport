@@ -1,18 +1,18 @@
 // Supabase Edge Function: draft-country
-// Researches a country's app landscape with Claude + web search and inserts a
-// NEW country as status='draft'. NEVER auto-publishes — an admin reviews and
-// flips status to 'published' after verifying the AI-generated content.
+// Researches a country's app landscape with OpenAI (web search enabled) and
+// inserts a NEW country as status='draft'. NEVER auto-publishes — an admin
+// reviews and flips status to 'published' after verifying the AI content.
 //
 // Deploy:  supabase functions deploy draft-country
-// Secrets: supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+// Secrets: supabase secrets set OPENAI_API_KEY=sk-...
 //
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// NOTE: The build spec requested this model id. Update to a current Claude
-// model id if this one is retired.
-const CLAUDE_MODEL = "claude-sonnet-4-6";
-const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+// Uses the OpenAI Responses API with the built-in web_search tool.
+// Update the model id if you prefer a different tier.
+const OPENAI_MODEL = "gpt-4.1";
+const OPENAI_URL = "https://api.openai.com/v1/responses";
 
 const CATEGORIES = [
   "Payments",
@@ -26,7 +26,8 @@ const CATEGORIES = [
 const SYSTEM_PROMPT = `You are a travel-tech researcher for US travelers. Using live web research,
 produce an accurate, current snapshot of which US apps work in a given country and the local
 alternatives to use instead. Be conservative: if something is uncertain or changes often (VPNs,
-payment rails), say so in why_short and mark severity accordingly. Return ONLY valid JSON.`;
+payment rails), say so in why_short and mark severity accordingly. Return ONLY valid JSON, with no
+markdown fences or commentary.`;
 
 function userPrompt(country: string) {
   return `Research the current app landscape for a US traveler visiting ${country}.
@@ -56,6 +57,24 @@ function slugify(name: string) {
   return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+// Aggregate assistant text from an OpenAI Responses API payload.
+function extractText(aiJson: any): string {
+  if (typeof aiJson.output_text === "string" && aiJson.output_text.length) {
+    return aiJson.output_text;
+  }
+  let text = "";
+  for (const item of aiJson.output ?? []) {
+    if (item.type === "message" && Array.isArray(item.content)) {
+      for (const c of item.content) {
+        if ((c.type === "output_text" || c.type === "text") && typeof c.text === "string") {
+          text += c.text + "\n";
+        }
+      }
+    }
+  }
+  return text;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -67,39 +86,35 @@ Deno.serve(async (req) => {
       return Response.json({ error: "country_name required" }, { status: 400 });
     }
 
-    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!anthropicKey) {
-      return Response.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 });
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) {
+      return Response.json({ error: "OPENAI_API_KEY not set" }, { status: 500 });
     }
 
-    // --- Call Claude with the web_search tool enabled ---------------------
-    const aiRes = await fetch(ANTHROPIC_URL, {
+    // --- Call OpenAI with the web_search tool enabled ---------------------
+    const aiRes = await fetch(OPENAI_URL, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": anthropicKey,
-        "anthropic-version": "2023-06-01",
+        authorization: `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 4000,
-        system: SYSTEM_PROMPT,
-        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }],
-        messages: [{ role: "user", content: userPrompt(country_name) }],
+        model: OPENAI_MODEL,
+        tools: [{ type: "web_search" }],
+        input: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userPrompt(country_name) },
+        ],
       }),
     });
 
     if (!aiRes.ok) {
       const t = await aiRes.text();
-      return Response.json({ error: `Claude API error: ${t}` }, { status: 502 });
+      return Response.json({ error: `OpenAI API error: ${t}` }, { status: 502 });
     }
 
     const aiJson = await aiRes.json();
-    // Concatenate text blocks, then extract the JSON object.
-    const text = (aiJson.content ?? [])
-      .filter((b: any) => b.type === "text")
-      .map((b: any) => b.text)
-      .join("\n");
+    const text = extractText(aiJson);
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) {
       return Response.json({ error: "No JSON in model output", raw: text }, { status: 502 });

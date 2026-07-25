@@ -117,7 +117,7 @@ Edge functions still deploy to Supabase (not the VPS):
 supabase functions deploy draft-country
 supabase functions deploy notify-approval
 supabase functions deploy digest-favorites
-supabase secrets set ANTHROPIC_API_KEY=... RESEND_API_KEY=... RESEND_FROM="AppPassport <hello@traveltechnician.info>"
+supabase secrets set OPENAI_API_KEY=... RESEND_API_KEY=... RESEND_FROM="AppPassport <hello@traveltechnician.info>"
 ```
 
 Schedule `digest-favorites` daily/weekly via Supabase scheduled functions.

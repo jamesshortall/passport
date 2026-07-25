@@ -74,7 +74,7 @@ supabase functions deploy draft-country
 supabase functions deploy notify-approval
 supabase functions deploy digest-favorites
 
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+supabase secrets set OPENAI_API_KEY=sk-...
 supabase secrets set RESEND_API_KEY=re_... RESEND_FROM="AppPassport <hello@traveltechnician.info>"
 ```
 
@@ -125,8 +125,8 @@ Schedule `digest-favorites` daily/weekly (Supabase scheduled functions / pg_cron
 - The **AI-assisted Refresh** staged-diff review UI (per-field approve/reject
   against an existing country) has its schema (`refresh_proposals`) and edge
   flow scaffolded; the admin review screen is the next build step.
-- The edge function uses the model id `claude-sonnet-4-6` as specified — update
-  to a current Claude model id if needed.
+- The AI drafting edge function uses OpenAI (`gpt-4.1`, Responses API with web
+  search) — set `OPENAI_API_KEY` and adjust the model id if needed.
 
 ## Scripts
 

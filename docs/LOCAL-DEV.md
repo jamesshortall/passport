@@ -51,7 +51,7 @@ directly from Supabase, so they work immediately.
 | Legal pages, cookie banner, `/embed/[slug]` | ✅ works now |
 | Sign up / sign in | ⚙️ add `http://localhost:3000/auth/callback` to Supabase → Auth → URL Configuration → Redirect URLs. For quick tests, turn off "Confirm email" under Auth → Providers → Email. |
 | `/admin` | 🔒 sign up, then promote your user: `select public.promote_to_admin('you@email');` in the SQL Editor |
-| AI "Generate Draft", approval/digest emails | 🚫 need deployed Edge Functions + API keys (`ANTHROPIC_API_KEY`, `RESEND_API_KEY`) |
+| AI "Generate Draft", approval/digest emails | 🚫 need deployed Edge Functions + API keys (`OPENAI_API_KEY`, `RESEND_API_KEY`) |
 
 ## Useful scripts
 

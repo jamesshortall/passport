@@ -124,7 +124,7 @@ export async function generateCountryDraft(name: string): Promise<ActionResult> 
     return {
       ok: false,
       message:
-        "AI drafting isn't available yet — deploy the draft-country edge function and set ANTHROPIC_API_KEY. (" +
+        "AI drafting isn't available yet — deploy the draft-country edge function and set OPENAI_API_KEY. (" +
         (e?.message ?? "invoke failed") +
         ")",
     };
