@@ -1,28 +1,17 @@
 import Link from "next/link";
-import Image from "next/image";
 import { SITE } from "@/lib/constants";
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5">
-        <Link href="/" className="flex items-center gap-2" aria-label="AppPassport home">
-          <Image
-            src="/brand/emblem.png"
-            alt=""
-            width={40}
-            height={40}
-            className="h-9 w-9 object-contain"
-            priority
+        <Link href="/" className="flex items-center" aria-label="AppPassport home">
+          {/* Plain img so the SVG logo renders crisply without next/image config */}
+          <img
+            src="/brand/apppassport-logo.svg"
+            alt="AppPassport by The Travel Technician"
+            className="h-10 w-auto sm:h-11"
           />
-          <span className="flex flex-col leading-none">
-            <span className="text-base font-extrabold tracking-tight text-brand-navy">
-              App<span className="text-brand-teal">Passport</span>
-            </span>
-            <span className="hidden text-[10px] font-medium uppercase tracking-wider text-slate-400 sm:block">
-              by The Travel Technician
-            </span>
-          </span>
         </Link>
 
         <nav className="flex items-center gap-1 text-sm sm:gap-4">
