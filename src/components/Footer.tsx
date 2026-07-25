@@ -63,13 +63,21 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-slate-100 pt-4 text-xs text-slate-400">
-          © {new Date().getFullYear()} The Travel Technician. App-availability
-          info changes fast — always double-check before you travel. See our{" "}
-          <Link href="/disclaimer" className="underline hover:text-brand-navy">
-            Content Accuracy Disclaimer
+        <div className="mt-8 flex flex-col gap-2 border-t border-slate-100 pt-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} The Travel Technician. App-availability
+            info changes fast — always double-check before you travel. See our{" "}
+            <Link href="/disclaimer" className="underline hover:text-brand-navy">
+              Content Accuracy Disclaimer
+            </Link>
+            .
+          </p>
+          <Link
+            href="/admin"
+            className="shrink-0 text-slate-400 hover:text-brand-navy"
+          >
+            Admin login
           </Link>
-          .
         </div>
       </div>
     </footer>
