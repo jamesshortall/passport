@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import { getSessionUser } from "@/lib/auth";
+import SignOutButton from "./SignOutButton";
 
 export default async function Header() {
   const user = await getSessionUser();
@@ -39,10 +40,31 @@ export default async function Header() {
             href={SITE.brand.main}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full border border-brand-teal/40 bg-brand-teal/10 px-3 py-1 text-xs font-semibold text-brand-tealdark hover:bg-brand-teal/20"
+            className="hidden rounded-full border border-brand-teal/40 bg-brand-teal/10 px-3 py-1 text-xs font-semibold text-brand-tealdark hover:bg-brand-teal/20 md:inline"
           >
             The Travel Technician ↗
           </a>
+
+          {/* Auth controls */}
+          <span className="mx-1 hidden h-5 w-px bg-slate-200 sm:inline-block" aria-hidden />
+          {user ? (
+            <span className="flex items-center gap-1.5">
+              <Link
+                href="/account"
+                className="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy"
+              >
+                Account
+              </Link>
+              <SignOutButton />
+            </span>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-full bg-brand-navy px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-navylight"
+            >
+              Sign in
+            </Link>
+          )}
         </nav>
       </div>
     </header>
