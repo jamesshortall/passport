@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Flag from "./Flag";
+import { thumbUrl } from "@/lib/imageUrl";
 
 /**
  * Country page hero banner. A branded navy→teal gradient is always the base
@@ -41,8 +42,9 @@ export default function CountryHero({
       {showPhoto && (
         // Plain <img> (not next/image) so onError can gracefully fall back.
         <img
-          src={imageUrl!}
+          src={thumbUrl(imageUrl, 1200, 500)!}
           alt={`${name} landscape`}
+          decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${

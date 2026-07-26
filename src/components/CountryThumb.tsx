@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Flag from "./Flag";
+import { thumbUrl } from "@/lib/imageUrl";
 
 /**
  * Photo thumbnail for a country card. Branded gradient base always renders;
@@ -26,8 +27,10 @@ export default function CountryThumb({
     <div className={`relative w-full overflow-hidden bg-gradient-to-br from-brand-navy via-brand-navylight to-brand-tealdark ${className}`}>
       {showPhoto && (
         <img
-          src={imageUrl!}
+          src={thumbUrl(imageUrl, 480, 300)!}
           alt=""
+          loading="lazy"
+          decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
           className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
