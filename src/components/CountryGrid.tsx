@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import type { Country } from "@/lib/types";
 import CountryCard from "./CountryCard";
 
@@ -28,13 +29,16 @@ export default function CountryGrid({ countries }: { countries: Country[] }) {
   return (
     <div>
       <div className="flex flex-col gap-3">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search a country or region…"
-          className="w-full rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
-          aria-label="Search countries"
-        />
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search a country or region…"
+            className="w-full rounded-full border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm shadow-sm focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
+            aria-label="Search countries"
+          />
+        </div>
         {/* Region chips sit UNDERNEATH the search and wrap, so they never
             collide with the sidebar/CTA on the right. */}
         <div className="flex flex-wrap gap-2">

@@ -13,6 +13,18 @@ html {
 
 body {
   @apply bg-brand-paper text-slate-800 antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Display typeface for headings, applied globally for a polished, consistent
+   type hierarchy. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
 }
 
 /* Keep tap targets comfortable on mobile */
