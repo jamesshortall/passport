@@ -20,14 +20,23 @@ Note the **Project ID** and **dataset** (usually `production`).
 
 ## 2. Add env vars
 
-Add to `.env.local` (and to the server env when you deploy):
+Add to `.env.local` (and to the server env when you deploy). Set **both**
+prefixes to the same values — `NEXT_PUBLIC_*` powers the website, and
+`SANITY_STUDIO_*` powers the Studio (`sanity dev`), which can't read
+`NEXT_PUBLIC_*`:
 
 ```bash
 NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
 NEXT_PUBLIC_SANITY_DATASET=production
+SANITY_STUDIO_PROJECT_ID=your_project_id
+SANITY_STUDIO_DATASET=production
 ```
 
 Rebuild (`npm run build`) — Next inlines `NEXT_PUBLIC_*` at build time.
+
+> **"Missing environment variable: NEXT_PUBLIC_SANITY_DATASET" when running the
+> Studio?** That's the Studio not seeing the website's variables. Add the
+> `SANITY_STUDIO_*` lines above and restart `npm run studio:dev`.
 
 ## 3. Run the Studio (the editing UI)
 
