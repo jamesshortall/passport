@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import AdminButton from "@/components/admin/AdminButton";
 import GenerateDraftForm from "@/components/admin/GenerateDraftForm";
 import HeroImageInput from "@/components/admin/HeroImageInput";
-import { reviewProfile, setCountryStatus, resolveReport, backfillHeroImages } from "./actions";
+import { reviewProfile, setCountryStatus, resolveReport, backfillHeroImages, cacheHeroImages } from "./actions";
 import type { Country, Profile, ReportRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -75,11 +75,19 @@ export default async function AdminPage() {
             Missing country photos? Fetch a hero image for every country that
             doesn't have one (uses Unsplash).
           </p>
-          <AdminButton
-            action={backfillHeroImages}
-            label="🖼️ Backfill hero images"
-            className="border border-brand-teal/40 bg-brand-teal/10 text-brand-tealdark hover:bg-brand-teal/20"
-          />
+          <div className="flex flex-wrap gap-2">
+            <AdminButton
+              action={backfillHeroImages}
+              label="🖼️ Backfill hero images"
+              className="border border-brand-teal/40 bg-brand-teal/10 text-brand-tealdark hover:bg-brand-teal/20"
+            />
+            <AdminButton
+              action={cacheHeroImages}
+              label="⚡ Cache photos to storage (faster)"
+              className="border border-brand-navy/30 bg-brand-navy/5 text-brand-navy hover:bg-brand-navy/10"
+              confirm="Download each country's photo into Supabase Storage and repoint to the fast CDN?"
+            />
+          </div>
         </div>
       </section>
 

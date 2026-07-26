@@ -103,6 +103,39 @@ export async function backfillHeroImages(): Promise<ActionResult> {
   }
 }
 
+/** Download external hero photos into Supabase Storage (fast CDN) and repoint
+ *  each country's hero at the stored copy. Idempotent. */
+export async function cacheHeroImages(): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, message: "Not authorized" };
+
+  const supabase = createSupabaseServerClient();
+  try {
+    const { data, error } = await supabase.functions.invoke("cache-heroes", { body: {} });
+    if (error) {
+      let detail = error.message ?? "invoke failed";
+      try {
+        const body = await (error as any).context?.json?.();
+        if (body?.error) detail = body.error;
+      } catch {
+        /* ignore */
+      }
+      return { ok: false, message: `Caching failed: ${detail}` };
+    }
+    const res = data as { cached?: number; skipped?: number; failed?: string[] };
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return {
+      ok: true,
+      message: `Cached ${res.cached ?? 0} to storage (${res.skipped ?? 0} already done).${
+        res.failed && res.failed.length ? ` Failed: ${res.failed.join(", ")}.` : ""
+      }`,
+    };
+  } catch (e: any) {
+    return { ok: false, message: `Caching failed: ${e?.message ?? "unknown error"}` };
+  }
+}
+
 /** Set (or clear) a country's hero image URL. Goes live immediately. */
 export async function setCountryHeroImage(
   countryId: string,
