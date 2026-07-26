@@ -78,7 +78,17 @@ export async function backfillHeroImages(): Promise<ActionResult> {
   const supabase = createSupabaseServerClient();
   try {
     const { data, error } = await supabase.functions.invoke("backfill-heroes", { body: {} });
-    if (error) throw error;
+    if (error) {
+      // Surface the function's actual error body (e.g. "UNSPLASH_ACCESS_KEY not set").
+      let detail = error.message ?? "invoke failed";
+      try {
+        const body = await (error as any).context?.json?.();
+        if (body?.error) detail = body.error;
+      } catch {
+        /* ignore */
+      }
+      return { ok: false, message: `Backfill failed: ${detail}` };
+    }
     const res = data as { updated?: number; missed?: string[] };
     revalidatePath("/admin");
     revalidatePath("/");
@@ -89,13 +99,7 @@ export async function backfillHeroImages(): Promise<ActionResult> {
       }`,
     };
   } catch (e: any) {
-    return {
-      ok: false,
-      message:
-        "Backfill unavailable — deploy the backfill-heroes function and set UNSPLASH_ACCESS_KEY. (" +
-        (e?.message ?? "invoke failed") +
-        ")",
-    };
+    return { ok: false, message: `Backfill failed: ${e?.message ?? "unknown error"}` };
   }
 }
 
