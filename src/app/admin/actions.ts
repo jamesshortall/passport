@@ -70,6 +70,35 @@ export async function setCountryStatus(
   return { ok: true };
 }
 
+/** Backfill hero photos for all countries missing one (via Unsplash). */
+export async function backfillHeroImages(): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, message: "Not authorized" };
+
+  const supabase = createSupabaseServerClient();
+  try {
+    const { data, error } = await supabase.functions.invoke("backfill-heroes", { body: {} });
+    if (error) throw error;
+    const res = data as { updated?: number; missed?: string[] };
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return {
+      ok: true,
+      message: `Added photos to ${res.updated ?? 0} countries.${
+        res.missed && res.missed.length ? ` No match for: ${res.missed.join(", ")}.` : ""
+      }`,
+    };
+  } catch (e: any) {
+    return {
+      ok: false,
+      message:
+        "Backfill unavailable — deploy the backfill-heroes function and set UNSPLASH_ACCESS_KEY. (" +
+        (e?.message ?? "invoke failed") +
+        ")",
+    };
+  }
+}
+
 /** Set (or clear) a country's hero image URL. Goes live immediately. */
 export async function setCountryHeroImage(
   countryId: string,

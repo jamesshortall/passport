@@ -59,6 +59,28 @@ function slugify(name: string) {
   return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+// Best-effort hero photo from Unsplash (if UNSPLASH_ACCESS_KEY is set).
+async function fetchHero(name: string): Promise<string | null> {
+  const key = Deno.env.get("UNSPLASH_ACCESS_KEY");
+  if (!key) return null;
+  try {
+    const url =
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(name)}` +
+      `&orientation=landscape&per_page=1&content_filter=high`;
+    const res = await fetch(url, { headers: { Authorization: `Client-ID ${key}` } });
+    if (!res.ok) return null;
+    const j = await res.json();
+    const p = j.results?.[0];
+    if (!p) return null;
+    if (p.links?.download_location) {
+      fetch(p.links.download_location, { headers: { Authorization: `Client-ID ${key}` } }).catch(() => {});
+    }
+    return `${p.urls.raw}&w=1600&q=70&fit=crop&auto=format`;
+  } catch {
+    return null;
+  }
+}
+
 // Aggregate assistant text from an OpenAI Responses API payload.
 function extractText(aiJson: any): string {
   if (typeof aiJson.output_text === "string" && aiJson.output_text.length) {
@@ -153,6 +175,7 @@ Deno.serve(async (req) => {
 
     // --- Insert as a DRAFT country via the service-role client above -------
     const slug = slugify(country_name);
+    const heroUrl = await fetchHero(country_name);
     const { data: country, error: cErr } = await supabase
       .from("countries")
       .insert({
@@ -161,6 +184,7 @@ Deno.serve(async (req) => {
         status: "draft",
         flag_emoji: parsed.flag_emoji ?? null,
         region: parsed.region ?? null,
+        hero_image_url: heroUrl,
         country_alert: parsed.country_alert ?? null,
         country_alert_detail: parsed.country_alert_detail ?? null,
       })

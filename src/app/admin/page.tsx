@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import AdminButton from "@/components/admin/AdminButton";
 import GenerateDraftForm from "@/components/admin/GenerateDraftForm";
 import HeroImageInput from "@/components/admin/HeroImageInput";
-import { reviewProfile, setCountryStatus, resolveReport } from "./actions";
+import { reviewProfile, setCountryStatus, resolveReport, backfillHeroImages } from "./actions";
 import type { Country, Profile, ReportRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +69,17 @@ export default async function AdminPage() {
         </p>
         <div className="mt-3">
           <GenerateDraftForm />
+        </div>
+        <div className="mt-4 border-t border-brand-accent/20 pt-3">
+          <p className="mb-2 text-sm text-slate-600">
+            Missing country photos? Fetch a hero image for every country that
+            doesn't have one (uses Unsplash).
+          </p>
+          <AdminButton
+            action={backfillHeroImages}
+            label="🖼️ Backfill hero images"
+            className="border border-brand-teal/40 bg-brand-teal/10 text-brand-tealdark hover:bg-brand-teal/20"
+          />
         </div>
       </section>
 
