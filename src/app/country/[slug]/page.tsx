@@ -80,7 +80,32 @@ export default async function CountryPage({
         />
       </div>
 
-      <div className="mt-3 flex items-center justify-end">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        {(() => {
+          const apps = categories.flatMap((c) => c.apps);
+          const blocked = apps.filter((a) => a.severity === "blocked").length;
+          const fine = apps.filter((a) => a.severity === "works_fine").length;
+          return (
+            <div className="flex gap-2">
+              <span className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-card">
+                <b className="font-display text-brand-navy">{apps.length}</b>{" "}
+                <span className="text-slate-500">apps tracked</span>
+              </span>
+              {blocked > 0 && (
+                <span className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm">
+                  <b className="font-display text-red-700">{blocked}</b>{" "}
+                  <span className="text-red-600">blocked</span>
+                </span>
+              )}
+              {fine > 0 && (
+                <span className="rounded-xl border border-green-200 bg-green-50 px-3 py-1.5 text-sm">
+                  <b className="font-display text-green-700">{fine}</b>{" "}
+                  <span className="text-green-600">work fine</span>
+                </span>
+              )}
+            </div>
+          );
+        })()}
         <SaveCountryButton countryId={country.id} />
       </div>
 

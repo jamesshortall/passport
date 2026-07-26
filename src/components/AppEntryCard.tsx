@@ -6,6 +6,7 @@ import { WORKS_META } from "@/lib/constants";
 import SeverityTag from "./SeverityTag";
 import SetupEffortBadge from "./SetupEffortBadge";
 import ReportAccuracy from "./ReportAccuracy";
+import AppLogo from "./AppLogo";
 
 function formatDate(iso: string) {
   try {
@@ -26,25 +27,28 @@ export default function AppEntryCard({ app }: { app: CountryApp }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-lg" aria-hidden title={works.label}>
-              {works.icon}
-            </span>
-            <h3 className="truncate font-semibold text-slate-900">
-              {app.us_app_name}
-            </h3>
-          </div>
-          {app.local_alternative_name ? (
-            <p className="mt-0.5 text-sm text-slate-500">
-              Use instead:{" "}
-              <span className="font-medium text-brand-navy">
-                {app.local_alternative_name}
+        <div className="flex min-w-0 gap-3">
+          <AppLogo name={app.us_app_name} size={42} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base" aria-hidden title={works.label}>
+                {works.icon}
               </span>
-            </p>
-          ) : (
-            <p className="mt-0.5 text-sm text-slate-400">No direct substitute</p>
-          )}
+              <h3 className="truncate font-semibold text-slate-900">
+                {app.us_app_name}
+              </h3>
+            </div>
+            {app.local_alternative_name ? (
+              <p className="mt-0.5 text-sm text-slate-500">
+                Use instead:{" "}
+                <span className="font-medium text-brand-navy">
+                  {app.local_alternative_name}
+                </span>
+              </p>
+            ) : (
+              <p className="mt-0.5 text-sm text-slate-400">No direct substitute</p>
+            )}
+          </div>
         </div>
         <SeverityTag severity={app.severity} />
       </div>

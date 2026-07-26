@@ -27,7 +27,7 @@ export default function CountryHero({
   const showPhoto = imageUrl && !failed;
 
   return (
-    <div className="relative h-52 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-brand-navylight to-brand-tealdark sm:h-64">
+    <div className="relative h-60 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-brand-navylight to-brand-tealdark sm:h-72">
       {/* Subtle emblem watermark on the gradient base */}
       <div
         className="pointer-events-none absolute -right-8 -top-8 h-56 w-56 opacity-10"

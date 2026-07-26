@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f2a43"/>
+      <stop offset="0.55" stop-color="#163a5c"/>
+      <stop offset="1" stop-color="#17708a"/>
+    </linearGradient>
+    <linearGradient id="cover" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eaf1f4"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1080" cy="90" r="260" fill="#1f8fa8" opacity="0.18"/>
+
+  <!-- Mark (from apppassport-mark), scaled + placed left -->
+  <g transform="translate(96 175) scale(0.55)">
+    <rect width="512" height="512" rx="116" fill="#0f2a43" stroke="#2a4a68" stroke-width="4"/>
+    <path d="M96 392 Q 232 300 372 150" fill="none" stroke="#3bb0c9" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 20"/>
+    <g transform="rotate(38 384 150)">
+      <path d="M384 128 L400 150 L384 172 L378 172 L386 152 L360 156 L354 150 L360 144 L386 148 L378 128 Z" fill="#3bb0c9"/>
+    </g>
+    <g transform="rotate(-8 256 270)">
+      <rect x="150" y="142" width="212" height="262" rx="26" fill="url(#cover)"/>
+      <rect x="150" y="142" width="30" height="262" rx="14" fill="#d7e2e8"/>
+      <g transform="translate(262 244)" stroke="#1f8fa8" fill="none" stroke-width="9" stroke-linecap="round">
+        <circle r="60"/>
+        <ellipse rx="27" ry="60" stroke-width="7"/>
+        <line x1="-60" y1="0" x2="60" y2="0" stroke-width="7"/>
+        <path d="M-54 -28 H54 M-54 28 H54" stroke-width="6"/>
+      </g>
+      <rect x="206" y="336" width="112" height="14" rx="7" fill="#1f8fa8"/>
+      <g transform="rotate(-14 318 190)">
+        <circle cx="318" cy="190" r="34" fill="none" stroke="#c8a24a" stroke-width="6" stroke-dasharray="3 9"/>
+        <path d="M318 172 l5 11 12 1 -9 8 3 12 -11 -7 -11 7 3 -12 -9 -8 12 -1 Z" fill="#c8a24a"/>
+      </g>
+    </g>
+  </g>
+
+  <text x="400" y="232" font-family="'DejaVu Sans', Arial, sans-serif" font-size="76" font-weight="bold">
+    <tspan fill="#ffffff">App</tspan><tspan fill="#3bb0c9">Passport</tspan>
+  </text>
+  <text x="402" y="286" font-family="'DejaVu Sans', Arial, sans-serif" font-size="24" font-weight="bold" letter-spacing="4" fill="#9fb2c0">BY THE TRAVEL TECHNICIAN</text>
+
+  <text x="400" y="372" font-family="'DejaVu Sans', Arial, sans-serif" font-size="44" font-weight="bold" fill="#ffffff">Which apps actually work</text>
+  <text x="400" y="426" font-family="'DejaVu Sans', Arial, sans-serif" font-size="44" font-weight="bold" fill="#ffffff">where you're going?</text>
+
+  <text x="400" y="500" font-family="'DejaVu Sans', Arial, sans-serif" font-size="25" fill="#cbd6df">Payments · Messaging · Maps · Ride-hailing — country by country.</text>
+
+  <rect x="96" y="556" width="1008" height="2" fill="#ffffff" opacity="0.12"/>
+  <text x="96" y="600" font-family="'DejaVu Sans', Arial, sans-serif" font-size="24" font-weight="bold" fill="#3bb0c9">passport.traveltechnician.info</text>
+</svg>
