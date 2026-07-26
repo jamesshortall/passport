@@ -58,6 +58,20 @@ Deno.serve(async (req) => {
     const key = Deno.env.get("UNSPLASH_ACCESS_KEY");
     if (!key) return Response.json({ error: "UNSPLASH_ACCESS_KEY not set" }, { status: 500 });
 
+    // Validate the key up front so we return a clear reason instead of
+    // silently reporting "no match" for every country.
+    const test = await fetch(
+      "https://api.unsplash.com/search/photos?query=paris&per_page=1",
+      { headers: { Authorization: `Client-ID ${key}` } }
+    );
+    if (!test.ok) {
+      const body = (await test.text()).slice(0, 300);
+      return Response.json(
+        { error: `Unsplash rejected the key (HTTP ${test.status}). Make sure you used the ACCESS key, not the Secret key. ${body}` },
+        { status: 502 }
+      );
+    }
+
     const { data: countries } = await supabase
       .from("countries")
       .select("id, name")
