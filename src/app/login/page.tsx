@@ -66,6 +66,20 @@ export default function LoginPage() {
     if (error) setErr(error.message);
   }
 
+  async function handleForgot() {
+    setErr(null);
+    setMsg(null);
+    if (!email) return setErr("Enter your email above first, then click “Forgot password”.");
+    setBusy(true);
+    const supabase = createSupabaseBrowserClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${SITE.url}/auth/callback?next=/reset-password`,
+    });
+    setBusy(false);
+    if (error) return setErr(error.message);
+    setMsg("Check your email for a link to reset your password.");
+  }
+
   return (
     <div className="mx-auto max-w-md px-4 py-12">
       <h1 className="text-2xl font-extrabold text-brand-navy">
@@ -112,6 +126,17 @@ export default function LoginPage() {
         >
           {busy ? "…" : mode === "signin" ? "Sign in" : "Sign up"}
         </button>
+        {mode === "signin" && (
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={handleForgot}
+              className="text-xs font-medium text-slate-500 hover:text-brand-navy"
+            >
+              Forgot password?
+            </button>
+          </div>
+        )}
       </form>
 
       <div className="my-4 flex items-center gap-3 text-xs text-slate-400">

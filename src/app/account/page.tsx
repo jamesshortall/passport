@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import SignOutButton from "@/components/SignOutButton";
+import UpdatePasswordForm from "@/components/UpdatePasswordForm";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,17 @@ export default async function AccountPage() {
           )}
         </div>
       )}
+
+      {/* Change password */}
+      <div className="mt-8 rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="font-semibold text-brand-navy">Change password</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Set a new password for signing in.
+        </p>
+        <div className="mt-4">
+          <UpdatePasswordForm submitLabel="Update password" />
+        </div>
+      </div>
     </div>
   );
 }
