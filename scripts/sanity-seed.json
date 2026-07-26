@@ -1,0 +1,71 @@
+{
+  "faqs": [
+    {
+      "q": "How current is the app-availability information?",
+      "a": "Each app entry shows a “last verified” date, and we log every change in the What's New tab. App availability abroad changes fast — VPN access, payment rails and local apps can shift with little notice — so treat AppPassport as a well-researched starting point, not your only source. Always double-check official and local sources before you rely on any app while traveling. See our Content Accuracy Disclaimer for the full picture."
+    },
+    {
+      "q": "Do I need an account to use AppPassport?",
+      "a": "No. Browsing every published country, the Trip Planner, the app inventory and the update feed is completely open — no account required. You only need an account to save countries as favorites and receive change alerts."
+    },
+    {
+      "q": "Why does my new account say “awaiting admin approval”?",
+      "a": "To keep the community healthy, new accounts are reviewed by an admin before the account-only features (saving countries, alerts) unlock. You can still browse everything in the meantime. You'll get an email as soon as your account is approved."
+    },
+    {
+      "q": "How do I save countries and get alerts?",
+      "a": "Once your account is approved, tap “Save” on any country page. Saved countries appear on your account, and when we update a country you've saved, we include it in a batched email digest — never a flood of one-off emails."
+    },
+    {
+      "q": "Can I use AppPassport offline while I'm traveling?",
+      "a": "Yes. AppPassport is a installable web app (PWA). Country pages you've visited are cached on your device, so you can pull them up again on a plane or on bad hotel wifi. Pages you've cached show an “available offline” badge."
+    },
+    {
+      "q": "A country's info looks out of date — what should I do?",
+      "a": "Use the “Still accurate? 👍 👎” control on any app card. A 👎 lets you add a quick note, and it goes straight to our review queue. You can also send details through the Contact or Feedback tab here. Reports genuinely help us keep the data fresh."
+    },
+    {
+      "q": "Can I suggest a country or an app to add?",
+      "a": "Absolutely — that's exactly what the Feedback tab is for (choose “New Country Request”). We prioritize additions partly based on what travelers ask for most."
+    },
+    {
+      "q": "Is my data private?",
+      "a": "We keep it minimal: if you create an account we store your email and which countries you've saved. Anonymous “report outdated” submissions aren't tied to an account. We don't sell your data. See our Privacy Policy and Cookie Policy for details."
+    },
+    {
+      "q": "How is AppPassport related to The Travel Technician and Cardmaster?",
+      "a": "AppPassport is part of The Travel Technician family. The Travel Technician is the parent brand (blog + main site), and Cardmaster is our companion app for getting the most out of travel rewards cards. Same team, same goal: smarter travel."
+    }
+  ],
+  "changelog": [
+    {
+      "date": "2026-07-25",
+      "tag": "New",
+      "title": "Support Center",
+      "items": [
+        "Added this Support Center: contact us, send feedback, browse FAQs, and follow what's new — all in one place.",
+        "Every message routes to support@traveltechnician.info."
+      ]
+    },
+    {
+      "date": "2026-07-25",
+      "tag": "Improved",
+      "title": "Branding & polish",
+      "items": [
+        "New AppPassport logo and app icons in The Travel Technician's navy + teal.",
+        "Photographic hero banners on every country page, with a graceful branded fallback.",
+        "Real flag images (so flags render correctly on every device), a refreshed home page, and clearer navigation."
+      ]
+    },
+    {
+      "date": "2026-07-24",
+      "tag": "Launch",
+      "title": "AppPassport is live",
+      "items": [
+        "Country guides for China, Thailand, Japan, Mexico, France, Germany, Italy, Spain and Liberia.",
+        "Per-country breakdowns of payments, messaging, maps, ride-hailing, internet access and social media — with local alternatives and setup effort.",
+        "Trip Planner, app inventory, update feed, saved countries, and offline (PWA) support."
+      ]
+    }
+  ]
+}

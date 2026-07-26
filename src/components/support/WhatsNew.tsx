@@ -1,4 +1,4 @@
-import { CHANGELOG } from "@/lib/supportContent";
+import { CHANGELOG, type ChangelogEntry } from "@/lib/supportContent";
 
 const TAG_STYLES: Record<string, string> = {
   New: "bg-brand-teal/10 text-brand-tealdark border-brand-teal/30",
@@ -19,12 +19,12 @@ function fmt(iso: string) {
   }
 }
 
-export default function WhatsNew() {
+export default function WhatsNew({ entries = CHANGELOG }: { entries?: ChangelogEntry[] }) {
   return (
     <div className="relative space-y-6 pl-6">
       {/* timeline line */}
       <span className="absolute left-1.5 top-1.5 bottom-1.5 w-px bg-slate-200" aria-hidden />
-      {CHANGELOG.map((entry, i) => (
+      {entries.map((entry, i) => (
         <div key={i} className="relative">
           <span className="absolute -left-[18px] top-1.5 h-2.5 w-2.5 rounded-full bg-brand-teal ring-4 ring-white" aria-hidden />
           <div className="flex flex-wrap items-center gap-2">

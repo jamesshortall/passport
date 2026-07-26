@@ -6,6 +6,7 @@ import FeedbackForm from "./FeedbackForm";
 import FaqAccordion from "./FaqAccordion";
 import WhatsNew from "./WhatsNew";
 import ResourcesPanel from "./ResourcesPanel";
+import type { Faq, ChangelogEntry } from "@/lib/supportContent";
 
 const TABS = [
   { key: "contact", label: "Contact", icon: "✉️" },
@@ -17,7 +18,13 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
-export default function SupportCenter() {
+export default function SupportCenter({
+  faqs,
+  changelog,
+}: {
+  faqs?: Faq[];
+  changelog?: ChangelogEntry[];
+}) {
   const [tab, setTab] = useState<TabKey>("contact");
 
   return (
@@ -57,8 +64,8 @@ export default function SupportCenter() {
       <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
         {tab === "contact" && <ContactForm />}
         {tab === "feedback" && <FeedbackForm />}
-        {tab === "faq" && <FaqAccordion />}
-        {tab === "whats-new" && <WhatsNew />}
+        {tab === "faq" && <FaqAccordion faqs={faqs} />}
+        {tab === "whats-new" && <WhatsNew entries={changelog} />}
         {tab === "resources" && <ResourcesPanel />}
       </div>
 

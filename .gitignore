@@ -36,3 +36,7 @@ next-env.d.ts
 # supabase
 supabase/.branches
 supabase/.temp
+
+# sanity
+.sanity/
+dist/

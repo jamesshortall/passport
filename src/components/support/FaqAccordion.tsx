@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { FAQS } from "@/lib/supportContent";
+import { FAQS, type Faq } from "@/lib/supportContent";
 
-export default function FaqAccordion() {
+export default function FaqAccordion({ faqs = FAQS }: { faqs?: Faq[] }) {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <div className="divide-y divide-slate-100">
-      {FAQS.map((f, i) => {
+      {faqs.map((f, i) => {
         const isOpen = open === i;
         return (
           <div key={i}>
