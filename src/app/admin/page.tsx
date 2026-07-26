@@ -64,13 +64,58 @@ export default async function AdminPage() {
       <section className="mt-8 rounded-2xl border-2 border-dashed border-brand-accent/50 bg-brand-accent/5 p-5">
         <h2 className="font-bold text-brand-navy">Generate Draft for New Country</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Researches a country with Claude + web search and inserts it as a{" "}
+          Researches a country with OpenAI + web search and inserts it as a{" "}
           <strong>draft</strong>. Nothing is auto-published — review it below first.
         </p>
         <div className="mt-3">
           <GenerateDraftForm />
         </div>
       </section>
+
+      {/* --- Draft countries pending review ----------------------------- */}
+      {(() => {
+        const drafts = allCountries.filter((c) => c.status === "draft");
+        return (
+          <section className="mt-8">
+            <h2 className="mb-3 text-lg font-bold text-brand-navy">
+              Draft Countries — pending review{" "}
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
+                {drafts.length}
+              </span>
+            </h2>
+            {drafts.length === 0 ? (
+              <p className="text-sm text-slate-400">No drafts awaiting review.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100 rounded-xl border border-amber-200 bg-amber-50/40">
+                {drafts.map((c) => (
+                  <li key={c.id} className="flex items-center justify-between gap-3 p-3">
+                    <div className="flex items-center gap-2">
+                      <span aria-hidden>{c.flag_emoji}</span>
+                      <span className="text-sm font-medium text-slate-800">{c.name}</span>
+                      {c.region && <span className="text-xs text-slate-400">{c.region}</span>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/country/${c.slug}`}
+                        target="_blank"
+                        className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-brand-navy hover:bg-slate-50"
+                      >
+                        Preview ↗
+                      </Link>
+                      <AdminButton
+                        action={setCountryStatus.bind(null, c.id, "published")}
+                        label="Publish"
+                        className="bg-brand-navy text-white hover:bg-brand-navylight"
+                        confirm="Publish this country? It will go live immediately."
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        );
+      })()}
 
       {/* --- Pending approvals ------------------------------------------ */}
       <section className="mt-8">
