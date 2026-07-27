@@ -157,6 +157,44 @@ export async function setCountryHeroImage(
   return { ok: true, message: trimmed ? "Hero image updated" : "Hero image cleared" };
 }
 
+/** Permanently delete a country and everything tied to it (app entries,
+ *  favorites, change log, reports, refresh proposals via cascade) plus its
+ *  stored hero images — a clean slate so it can be re-drafted from scratch. */
+export async function deleteCountry(countryId: string): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, message: "Not authorized" };
+
+  const supabase = createSupabaseServerClient();
+
+  const { data: country } = await supabase
+    .from("countries")
+    .select("slug, name")
+    .eq("id", countryId)
+    .maybeSingle();
+
+  // Best-effort: remove hero images from storage (cached "<slug>.ext" files and
+  // any admin uploads under the "<countryId>/" folder).
+  try {
+    const paths: string[] = country?.slug
+      ? ["jpg", "png", "webp", "avif"].map((e) => `${country.slug}.${e}`)
+      : [];
+    const { data: folder } = await supabase.storage.from("country-heroes").list(countryId);
+    if (folder) paths.push(...folder.map((f) => `${countryId}/${f.name}`));
+    if (paths.length) await supabase.storage.from("country-heroes").remove(paths);
+  } catch {
+    /* non-fatal */
+  }
+
+  // Deleting the country cascades to country_apps, favorites, change_log,
+  // refresh_proposals (and reports via country_apps).
+  const { error } = await supabase.from("countries").delete().eq("id", countryId);
+  if (error) return { ok: false, message: error.message };
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { ok: true, message: `Deleted ${country?.name ?? "country"}.` };
+}
+
 /** Mark a user report as reviewed. */
 export async function resolveReport(reportId: string): Promise<ActionResult> {
   const admin = await requireAdmin();

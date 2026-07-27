@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import AdminButton from "@/components/admin/AdminButton";
 import GenerateDraftForm from "@/components/admin/GenerateDraftForm";
 import HeroImageInput from "@/components/admin/HeroImageInput";
-import { reviewProfile, setCountryStatus, resolveReport, backfillHeroImages, cacheHeroImages } from "./actions";
+import { reviewProfile, setCountryStatus, resolveReport, backfillHeroImages, cacheHeroImages, deleteCountry } from "./actions";
 import type { Country, Profile, ReportRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -127,6 +127,12 @@ export default async function AdminPage() {
                         className="bg-brand-navy text-white hover:bg-brand-navylight"
                         confirm="Publish this country? It will go live immediately."
                       />
+                      <AdminButton
+                        action={deleteCountry.bind(null, c.id)}
+                        label="Delete"
+                        className="border border-red-300 text-red-600 hover:bg-red-50"
+                        confirm={`Permanently delete ${c.name} and ALL its data? This cannot be undone.`}
+                      />
                     </div>
                   </li>
                 ))}
@@ -216,6 +222,12 @@ export default async function AdminPage() {
                       confirm="Publish this country? It will go live immediately."
                     />
                   )}
+                  <AdminButton
+                    action={deleteCountry.bind(null, c.id)}
+                    label="Delete"
+                    className="border border-red-300 text-red-600 hover:bg-red-50"
+                    confirm={`Permanently delete ${c.name} and ALL its data (app entries, hero image, favorites)? This cannot be undone.`}
+                  />
                 </div>
               </div>
               <HeroImageInput countryId={c.id} initial={c.hero_image_url} />
