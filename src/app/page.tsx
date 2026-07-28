@@ -94,6 +94,42 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* What AppPassport is (purpose) */}
+      <section className="mb-12 rounded-2xl border border-slate-200 bg-white p-6 shadow-card sm:p-8">
+        <h2 className="font-display text-2xl font-bold text-brand-navy">What is AppPassport?</h2>
+        <p className="mt-3 max-w-3xl leading-relaxed text-slate-700">
+          AppPassport is a free travel guide that tells US travelers which of
+          their everyday apps — like Apple Pay, Google Maps, WhatsApp, and Uber —
+          actually work in each country, and which local alternative to download
+          instead. For every country we break down payments, messaging, maps,
+          ride-hailing, internet access, and social media, so you know exactly
+          what to set up before you fly.
+        </p>
+        <p className="mt-3 max-w-3xl leading-relaxed text-slate-700">
+          Browsing every country is completely free and requires no account.
+          You only need to <strong>create a free account — with your email or
+          with Google</strong> — if you want to save countries as favorites and
+          get notified when their information changes. When you sign in with
+          Google, we use only your basic profile (name and email) to create and
+          identify your account; we never post anything or access anything else.
+        </p>
+        <p className="mt-3 text-sm text-slate-500">
+          Read our{" "}
+          <Link href="/privacy" className="font-medium text-brand-teal underline hover:text-brand-tealdark">
+            Privacy Policy
+          </Link>{" "}
+          and{" "}
+          <Link href="/terms" className="font-medium text-brand-teal underline hover:text-brand-tealdark">
+            Terms of Service
+          </Link>
+          . AppPassport is part of{" "}
+          <a href="https://www.traveltechnician.info" target="_blank" rel="noopener noreferrer" className="font-medium text-brand-teal underline hover:text-brand-tealdark">
+            The Travel Technician
+          </a>
+          .
+        </p>
+      </section>
+
       {/* Browse */}
       <div id="browse" className="grid gap-8 lg:grid-cols-[1fr_280px]">
         <div>
