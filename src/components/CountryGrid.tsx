@@ -7,24 +7,31 @@ import CountryCard from "./CountryCard";
 
 export default function CountryGrid({ countries }: { countries: Country[] }) {
   const [query, setQuery] = useState("");
-  const [region, setRegion] = useState<string>("All");
+  // Default to a single region so the browse grid only loads that region's
+  // images up front, rather than every country's hero at once.
+  const [region, setRegion] = useState<string>("North America");
 
   const regions = useMemo(() => {
     const set = new Set(countries.map((c) => c.region).filter(Boolean) as string[]);
-    return ["All", ...Array.from(set).sort()];
+    return Array.from(set).sort();
   }, [countries]);
 
+  // Guard against the default region not existing in the data.
+  const activeRegion = regions.includes(region) ? region : regions[0] ?? region;
+
+  const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
     return countries.filter((c) => {
       const matchesQuery =
         !q ||
         c.name.toLowerCase().includes(q) ||
         (c.region?.toLowerCase().includes(q) ?? false);
-      const matchesRegion = region === "All" || c.region === region;
+      // While searching, look across every region; otherwise scope to the
+      // selected region chip.
+      const matchesRegion = q ? true : c.region === activeRegion;
       return matchesQuery && matchesRegion;
     });
-  }, [countries, query, region]);
+  }, [countries, q, activeRegion]);
 
   return (
     <div>
@@ -47,7 +54,7 @@ export default function CountryGrid({ countries }: { countries: Country[] }) {
               key={r}
               onClick={() => setRegion(r)}
               className={`rounded-full border px-3 py-1 text-sm transition ${
-                region === r
+                !q && activeRegion === r
                   ? "border-brand-navy bg-brand-navy text-white"
                   : "border-slate-300 bg-white text-slate-600 hover:border-brand-teal hover:text-brand-navy"
               }`}
