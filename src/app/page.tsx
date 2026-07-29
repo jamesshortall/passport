@@ -94,8 +94,33 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* What AppPassport is (purpose) */}
-      <section className="mb-12 rounded-2xl border border-slate-200 bg-white p-6 shadow-card sm:p-8">
+      {/* Browse */}
+      <div id="browse" className="grid gap-8 lg:grid-cols-[1fr_280px]">
+        <div>
+          <h2 className="mb-4 font-display text-2xl font-bold text-brand-navy">
+            Browse countries
+          </h2>
+          {countries.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
+              No countries published yet. Add and publish countries from the{" "}
+              <a href="/admin" className="underline">
+                admin panel
+              </a>
+              .
+            </div>
+          ) : (
+            <CountryGrid countries={countries} />
+          )}
+        </div>
+
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <CardmasterCTA />
+        </aside>
+      </div>
+
+      {/* What AppPassport is (purpose) — kept at the bottom so it stays out of
+          the way of browsing, but remains available for context & SEO. */}
+      <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 shadow-card sm:p-8">
         <h2 className="font-display text-2xl font-bold text-brand-navy">What is AppPassport?</h2>
         <p className="mt-3 max-w-3xl leading-relaxed text-slate-700">
           AppPassport is a free travel guide that tells US travelers which of
@@ -129,30 +154,6 @@ export default async function HomePage() {
           .
         </p>
       </section>
-
-      {/* Browse */}
-      <div id="browse" className="grid gap-8 lg:grid-cols-[1fr_280px]">
-        <div>
-          <h2 className="mb-4 font-display text-2xl font-bold text-brand-navy">
-            Browse countries
-          </h2>
-          {countries.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
-              No countries published yet. Add and publish countries from the{" "}
-              <a href="/admin" className="underline">
-                admin panel
-              </a>
-              .
-            </div>
-          ) : (
-            <CountryGrid countries={countries} />
-          )}
-        </div>
-
-        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <CardmasterCTA />
-        </aside>
-      </div>
     </div>
   );
 }
