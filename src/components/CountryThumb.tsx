@@ -21,18 +21,27 @@ export default function CountryThumb({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const showPhoto = imageUrl && !failed;
+
+  // Retry a stalled/failed thumbnail once before falling back to the gradient,
+  // so a transient network blip doesn't leave a permanent gap on refresh.
+  const base = thumbUrl(imageUrl, 480, 300);
+  const src =
+    base && attempt > 0
+      ? `${base}${base.includes("?") ? "&" : "?"}retry=${attempt}`
+      : base;
 
   return (
     <div className={`relative w-full overflow-hidden bg-gradient-to-br from-brand-navy via-brand-navylight to-brand-tealdark ${className}`}>
       {showPhoto && (
         <img
-          src={thumbUrl(imageUrl, 480, 300)!}
+          src={src!}
           alt=""
           loading="lazy"
           decoding="async"
           onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
+          onError={() => (attempt < 1 ? setAttempt((a) => a + 1) : setFailed(true))}
           className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
             loaded ? "opacity-100" : "opacity-0"
           }`}
