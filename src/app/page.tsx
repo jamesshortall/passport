@@ -44,6 +44,7 @@ export default async function HomePage() {
     <CardmasterCTA key="cardmaster" />,
     <PromoCTA
       key="site"
+      accent="teal"
       href={SITE.brand.main}
       logoSrc="/brand/tt-logo.png"
       logoAlt="Travel Technician — Smarter Travel. Better Rewards."
@@ -54,6 +55,7 @@ export default async function HomePage() {
     />,
     <PromoCTA
       key="blog"
+      accent="navy"
       href={SITE.brand.blog}
       logoSrc="/brand/tt-blog.png"
       logoAlt="The Travel Technician — Travel Blog"

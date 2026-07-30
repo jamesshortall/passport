@@ -8,6 +8,7 @@
 //
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { heroQuery } from "../_shared/heroQuery.ts";
 
 // Uses the OpenAI Responses API with the built-in web_search tool.
 // Update the model id if you prefer a different tier.
@@ -59,19 +60,21 @@ function slugify(name: string) {
   return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-// Best-effort hero photo from Unsplash (if UNSPLASH_ACCESS_KEY is set).
-async function fetchHero(name: string): Promise<string | null> {
+// Best-effort scenic, country-specific hero photo from Unsplash.
+async function fetchHero(name: string, slug: string): Promise<string | null> {
   const key = Deno.env.get("UNSPLASH_ACCESS_KEY");
   if (!key) return null;
   try {
     const url =
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(name)}` +
-      `&orientation=landscape&per_page=1&content_filter=high`;
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(heroQuery(name, slug))}` +
+      `&orientation=landscape&per_page=10&content_filter=high`;
     const res = await fetch(url, { headers: { Authorization: `Client-ID ${key}` } });
     if (!res.ok) return null;
     const j = await res.json();
-    const p = j.results?.[0];
-    if (!p) return null;
+    const results: any[] = j.results ?? [];
+    if (results.length === 0) return null;
+    const p =
+      results.find((r) => (r.width ?? 0) > (r.height ?? 0) * 1.2) ?? results[0];
     if (p.links?.download_location) {
       fetch(p.links.download_location, { headers: { Authorization: `Client-ID ${key}` } }).catch(() => {});
     }
@@ -175,7 +178,7 @@ Deno.serve(async (req) => {
 
     // --- Insert as a DRAFT country via the service-role client above -------
     const slug = slugify(country_name);
-    const heroUrl = await fetchHero(country_name);
+    const heroUrl = await fetchHero(country_name, slug);
     const { data: country, error: cErr } = await supabase
       .from("countries")
       .insert({

@@ -1,27 +1,45 @@
 // Supabase Edge Function: backfill-heroes
-// Fills in a hero photo for every country that doesn't have one, using the
-// Unsplash API. Admin-gated. Idempotent — only touches countries where
-// hero_image_url is null.
+// Sources a hero photo for countries from the Unsplash API. Admin-gated.
+//
+// Modes (JSON body, all optional):
+//   {}                        -> fill only countries with no hero yet (default)
+//   { "force": true }         -> re-source EVERY country (overwrite existing)
+//   { "slugs": ["georgia"] }  -> re-source only these countries (overwrite)
+//
+// After running this, run `cache-heroes` to copy the new photos into Storage
+// and (re)generate the fast /thumbs/ used by the browse grid.
 //
 // Deploy:  supabase functions deploy backfill-heroes
 // Secrets: supabase secrets set UNSPLASH_ACCESS_KEY=your_unsplash_access_key
 //
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { heroQuery } from "../_shared/heroQuery.ts";
 
-async function fetchHero(name: string, key: string): Promise<string | null> {
+// Fetch a scenic, country-specific hero. Searches several results and prefers a
+// landscape-oriented one so cards/heroes crop well.
+async function fetchHero(
+  name: string,
+  slug: string,
+  key: string
+): Promise<string | null> {
   try {
     const url =
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(name)}` +
-      `&orientation=landscape&per_page=1&content_filter=high`;
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(heroQuery(name, slug))}` +
+      `&orientation=landscape&per_page=10&content_filter=high`;
     const res = await fetch(url, { headers: { Authorization: `Client-ID ${key}` } });
     if (!res.ok) return null;
     const j = await res.json();
-    const p = j.results?.[0];
-    if (!p) return null;
+    const results: any[] = j.results ?? [];
+    if (results.length === 0) return null;
+    // Prefer a genuinely landscape (wider-than-tall) photo; fall back to first.
+    const p =
+      results.find((r) => (r.width ?? 0) > (r.height ?? 0) * 1.2) ?? results[0];
     // Best-effort download trigger (Unsplash API guideline).
     if (p.links?.download_location) {
-      fetch(p.links.download_location, { headers: { Authorization: `Client-ID ${key}` } }).catch(() => {});
+      fetch(p.links.download_location, {
+        headers: { Authorization: `Client-ID ${key}` },
+      }).catch(() => {});
     }
     return `${p.urls.raw}&w=1600&q=70&fit=crop&auto=format`;
   } catch {
@@ -72,15 +90,28 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: countries } = await supabase
-      .from("countries")
-      .select("id, name")
-      .is("hero_image_url", null);
+    // Parse optional targeting from the request body.
+    let reqBody: any = {};
+    try {
+      reqBody = await req.json();
+    } catch {
+      /* no body — default mode */
+    }
+    const slugs: string[] | undefined = Array.isArray(reqBody?.slugs) ? reqBody.slugs : undefined;
+    const force = reqBody?.force === true;
+
+    let q = supabase.from("countries").select("id, name, slug");
+    if (slugs && slugs.length > 0) {
+      q = q.in("slug", slugs);
+    } else if (!force) {
+      q = q.is("hero_image_url", null);
+    }
+    const { data: countries } = await q;
 
     let updated = 0;
     const missed: string[] = [];
     for (const c of countries ?? []) {
-      const heroUrl = await fetchHero((c as any).name, key);
+      const heroUrl = await fetchHero((c as any).name, (c as any).slug, key);
       if (heroUrl) {
         await supabase.from("countries").update({ hero_image_url: heroUrl }).eq("id", (c as any).id);
         updated++;
