@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Flag from "./Flag";
-import { renderThumbUrl, staticThumbUrl } from "@/lib/imageUrl";
+import { localThumbUrl, renderThumbUrl, staticThumbUrl } from "@/lib/imageUrl";
 
 /**
  * Photo thumbnail for a country card. Branded gradient base always renders;
@@ -23,11 +23,16 @@ export default function CountryThumb({
   const [failed, setFailed] = useState(false);
   const [idx, setIdx] = useState(0);
 
-  // Try the fast pre-generated static thumb first, then fall back to the
-  // on-the-fly transform (covers newly added countries with no static thumb
-  // yet), then the gradient base. Ordered, de-duplicated list of sources.
+  // Source order, fastest first: (1) first-party local copy served from our
+  // own origin, (2) Supabase static thumb object, (3) on-the-fly transform
+  // (covers countries with no static thumb yet), then the gradient base.
+  // Ordered, de-duplicated list of sources.
   const sources = useMemo(() => {
-    const list = [staticThumbUrl(imageUrl), renderThumbUrl(imageUrl, 480, 300)];
+    const list = [
+      localThumbUrl(imageUrl),
+      staticThumbUrl(imageUrl),
+      renderThumbUrl(imageUrl, 480, 300),
+    ];
     return Array.from(new Set(list.filter((s): s is string => Boolean(s))));
   }, [imageUrl]);
 

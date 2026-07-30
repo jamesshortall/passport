@@ -37,6 +37,9 @@ next-env.d.ts
 supabase/.branches
 supabase/.temp
 
+# thumbnails synced from Supabase Storage at build time (scripts/sync-thumbs.mjs)
+/public/country-heroes/
+
 # sanity
 .sanity/
 dist/

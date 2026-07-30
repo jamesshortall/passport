@@ -5,6 +5,8 @@
   "description": "AppPassport — which apps to use in which countries when you travel. Part of The Travel Technician brand.",
   "scripts": {
     "dev": "next dev",
+    "sync:thumbs": "node scripts/sync-thumbs.mjs",
+    "prebuild": "node scripts/sync-thumbs.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

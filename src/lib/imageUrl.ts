@@ -73,6 +73,23 @@ export function staticThumbUrl(url: string | null): string | null {
 }
 
 /**
+ * First-party thumbnail path, served from the app's own origin out of
+ * `public/country-heroes/thumbs/<path>` (populated at build time by
+ * scripts/sync-thumbs.mjs). Serving these locally avoids a cross-origin
+ * handshake to Supabase and cold CDN misses, which is the fastest option for
+ * the browse grid. Returns null for non-Supabase heroes (no local copy).
+ */
+export function localThumbUrl(url: string | null): string | null {
+  if (!url) return null;
+  const marker = `${STORAGE_PUBLIC_PREFIX}${HERO_BUCKET}/`;
+  const i = url.indexOf(marker);
+  if (i === -1) return null;
+  let rest = url.slice(i + marker.length).split("?")[0];
+  if (rest.startsWith("thumbs/")) rest = rest.slice("thumbs/".length);
+  return `/${HERO_BUCKET}/thumbs/${rest}`;
+}
+
+/**
  * Backwards-compatible on-the-fly resize. Retained for the detail-page hero,
  * which needs a large (1200-wide) render that the 480×300 static thumbs can't
  * supply without upscaling.
