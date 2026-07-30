@@ -63,6 +63,17 @@ server {
     listen 80;
     server_name passport.traveltechnician.info;
 
+    # Serve country thumbnails straight from disk (populated by the "prebuild"
+    # step, scripts/sync-thumbs.mjs) instead of proxying to Node. Same-origin +
+    # local disk + long cache = fast browse grid. A missing file 404s and the
+    # app falls back to the Supabase URL automatically.
+    location /country-heroes/ {
+        root       /var/www/apppassport/public;
+        expires    30d;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+
     location / {
         proxy_pass         http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -73,6 +84,13 @@ server {
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
+
+        # Allow large upstream response headers. The /auth/callback redirect
+        # sets the full Supabase session cookies; with the default buffer nginx
+        # rejects it as "upstream sent too big header" and returns 502.
+        proxy_buffer_size       16k;
+        proxy_buffers           8 16k;
+        proxy_busy_buffers_size 32k;
     }
 }
 ```

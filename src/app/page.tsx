@@ -4,9 +4,8 @@ import { getPublishedCountries } from "@/lib/queries";
 import CountryGrid from "@/components/CountryGrid";
 import CardmasterCTA from "@/components/CardmasterCTA";
 import PromoCTA from "@/components/PromoCTA";
+import RotatingPromos from "@/components/RotatingPromos";
 import { SITE } from "@/lib/constants";
-import { cookies } from "next/headers";
-import { PROMO_ROTATION_COOKIE } from "@/lib/promoRotation";
 
 // Rendered dynamically so newly published countries appear without a redeploy.
 export const dynamic = "force-dynamic";
@@ -38,7 +37,7 @@ export default async function HomePage() {
   const countries = await getPublishedCountries();
 
   // Sidebar promo cards. The rotation offset is decided in middleware
-  // (even round-robin across visits, stable within a visit) so no single
+  // Rotated client-side on every page load (see RotatingPromos) so no single
   // property is permanently pinned to the top slot.
   const promoCards = [
     <CardmasterCTA key="cardmaster" />,
@@ -64,15 +63,6 @@ export default async function HomePage() {
       description="Explore more, travel smarter — destination deep-dives, gear, and real-world travel advice."
       cta="Read the blog"
     />,
-  ];
-  // Rotate the array so the offset'th card leads, keeping the relative order.
-  const rawOffset = Number(cookies().get(PROMO_ROTATION_COOKIE)?.value);
-  const start = Number.isInteger(rawOffset)
-    ? ((rawOffset % promoCards.length) + promoCards.length) % promoCards.length
-    : 0;
-  const rotatedPromoCards = [
-    ...promoCards.slice(start),
-    ...promoCards.slice(0, start),
   ];
 
   return (
@@ -156,7 +146,7 @@ export default async function HomePage() {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          {rotatedPromoCards}
+          <RotatingPromos cards={promoCards} />
         </aside>
       </div>
 
