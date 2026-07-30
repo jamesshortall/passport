@@ -35,6 +35,36 @@ const STEPS = [
 export default async function HomePage() {
   const countries = await getPublishedCountries();
 
+  // Sidebar promo cards. Order is shuffled on every request (the page is
+  // force-dynamic) so no single property is permanently pinned to the top slot.
+  const promoCards = [
+    <CardmasterCTA key="cardmaster" />,
+    <PromoCTA
+      key="site"
+      href={SITE.brand.main}
+      logoSrc="/brand/tt-logo.png"
+      logoAlt="Travel Technician — Smarter Travel. Better Rewards."
+      eyebrow="From The Travel Technician"
+      title="Visit Travel Technician"
+      description="Smarter travel, better rewards. Guides, tips, and tools to help you get more out of every trip."
+      cta="Explore the site"
+    />,
+    <PromoCTA
+      key="blog"
+      href={SITE.brand.blog}
+      logoSrc="/brand/tt-blog.png"
+      logoAlt="The Travel Technician — Travel Blog"
+      eyebrow="From The Travel Technician"
+      title="Read the Travel Blog"
+      description="Explore more, travel smarter — destination deep-dives, gear, and real-world travel advice."
+      cta="Read the blog"
+    />,
+  ];
+  for (let i = promoCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [promoCards[i], promoCards[j]] = [promoCards[j], promoCards[i]];
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       {/* Hero */}
@@ -116,25 +146,7 @@ export default async function HomePage() {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <CardmasterCTA />
-          <PromoCTA
-            href={SITE.brand.main}
-            logoSrc="/brand/tt-logo.png"
-            logoAlt="Travel Technician — Smarter Travel. Better Rewards."
-            eyebrow="From The Travel Technician"
-            title="Visit Travel Technician"
-            description="Smarter travel, better rewards. Guides, tips, and tools to help you get more out of every trip."
-            cta="Explore the site"
-          />
-          <PromoCTA
-            href={SITE.brand.blog}
-            logoSrc="/brand/tt-blog.png"
-            logoAlt="The Travel Technician — Travel Blog"
-            eyebrow="From The Travel Technician"
-            title="Read the Travel Blog"
-            description="Explore more, travel smarter — destination deep-dives, gear, and real-world travel advice."
-            cta="Read the blog"
-          />
+          {promoCards}
         </aside>
       </div>
 
