@@ -5,6 +5,8 @@ import CountryGrid from "@/components/CountryGrid";
 import CardmasterCTA from "@/components/CardmasterCTA";
 import PromoCTA from "@/components/PromoCTA";
 import { SITE } from "@/lib/constants";
+import { cookies } from "next/headers";
+import { PROMO_ROTATION_COOKIE } from "@/lib/promoRotation";
 
 // Rendered dynamically so newly published countries appear without a redeploy.
 export const dynamic = "force-dynamic";
@@ -35,8 +37,9 @@ const STEPS = [
 export default async function HomePage() {
   const countries = await getPublishedCountries();
 
-  // Sidebar promo cards. Order is shuffled on every request (the page is
-  // force-dynamic) so no single property is permanently pinned to the top slot.
+  // Sidebar promo cards. The rotation offset is decided in middleware
+  // (even round-robin across visits, stable within a visit) so no single
+  // property is permanently pinned to the top slot.
   const promoCards = [
     <CardmasterCTA key="cardmaster" />,
     <PromoCTA
@@ -60,10 +63,15 @@ export default async function HomePage() {
       cta="Read the blog"
     />,
   ];
-  for (let i = promoCards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [promoCards[i], promoCards[j]] = [promoCards[j], promoCards[i]];
-  }
+  // Rotate the array so the offset'th card leads, keeping the relative order.
+  const rawOffset = Number(cookies().get(PROMO_ROTATION_COOKIE)?.value);
+  const start = Number.isInteger(rawOffset)
+    ? ((rawOffset % promoCards.length) + promoCards.length) % promoCards.length
+    : 0;
+  const rotatedPromoCards = [
+    ...promoCards.slice(start),
+    ...promoCards.slice(0, start),
+  ];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -146,7 +154,7 @@ export default async function HomePage() {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          {promoCards}
+          {rotatedPromoCards}
         </aside>
       </div>
 
