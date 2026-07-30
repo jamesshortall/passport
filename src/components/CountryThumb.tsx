@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Flag from "./Flag";
-import { thumbUrl } from "@/lib/imageUrl";
+import { renderThumbUrl, staticThumbUrl } from "@/lib/imageUrl";
 
 /**
  * Photo thumbnail for a country card. Branded gradient base always renders;
@@ -21,27 +21,34 @@ export default function CountryThumb({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  const showPhoto = imageUrl && !failed;
+  const [idx, setIdx] = useState(0);
 
-  // Retry a stalled/failed thumbnail once before falling back to the gradient,
-  // so a transient network blip doesn't leave a permanent gap on refresh.
-  const base = thumbUrl(imageUrl, 480, 300);
-  const src =
-    base && attempt > 0
-      ? `${base}${base.includes("?") ? "&" : "?"}retry=${attempt}`
-      : base;
+  // Try the fast pre-generated static thumb first, then fall back to the
+  // on-the-fly transform (covers newly added countries with no static thumb
+  // yet), then the gradient base. Ordered, de-duplicated list of sources.
+  const sources = useMemo(() => {
+    const list = [staticThumbUrl(imageUrl), renderThumbUrl(imageUrl, 480, 300)];
+    return Array.from(new Set(list.filter((s): s is string => Boolean(s))));
+  }, [imageUrl]);
+
+  const src = sources[idx];
+  const showPhoto = Boolean(src) && !failed;
 
   return (
     <div className={`relative w-full overflow-hidden bg-gradient-to-br from-brand-navy via-brand-navylight to-brand-tealdark ${className}`}>
       {showPhoto && (
         <img
-          src={src!}
+          key={src}
+          src={src}
           alt=""
           loading="lazy"
           decoding="async"
           onLoad={() => setLoaded(true)}
-          onError={() => (attempt < 1 ? setAttempt((a) => a + 1) : setFailed(true))}
+          onError={() => {
+            setLoaded(false);
+            if (idx + 1 < sources.length) setIdx((i) => i + 1);
+            else setFailed(true);
+          }}
           className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
             loaded ? "opacity-100" : "opacity-0"
           }`}
