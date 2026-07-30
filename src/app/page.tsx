@@ -3,6 +3,8 @@ import { Compass, ShieldCheck, Download, MapPinned } from "lucide-react";
 import { getPublishedCountries } from "@/lib/queries";
 import CountryGrid from "@/components/CountryGrid";
 import CardmasterCTA from "@/components/CardmasterCTA";
+import PromoCTA from "@/components/PromoCTA";
+import { SITE } from "@/lib/constants";
 
 // Rendered dynamically so newly published countries appear without a redeploy.
 export const dynamic = "force-dynamic";
@@ -115,6 +117,24 @@ export default async function HomePage() {
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <CardmasterCTA />
+          <PromoCTA
+            href={SITE.brand.main}
+            logoSrc="/brand/tt-logo.png"
+            logoAlt="Travel Technician — Smarter Travel. Better Rewards."
+            eyebrow="From The Travel Technician"
+            title="Visit Travel Technician"
+            description="Smarter travel, better rewards. Guides, tips, and tools to help you get more out of every trip."
+            cta="Explore the site"
+          />
+          <PromoCTA
+            href={SITE.brand.blog}
+            logoSrc="/brand/tt-blog.png"
+            logoAlt="The Travel Technician — Travel Blog"
+            eyebrow="From The Travel Technician"
+            title="Read the Travel Blog"
+            description="Explore more, travel smarter — destination deep-dives, gear, and real-world travel advice."
+            cta="Read the blog"
+          />
         </aside>
       </div>
 
