@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import AdminButton from "@/components/admin/AdminButton";
 import GenerateDraftForm from "@/components/admin/GenerateDraftForm";
 import HeroImageInput from "@/components/admin/HeroImageInput";
-import { reviewProfile, setCountryStatus, resolveReport, backfillHeroImages, cacheHeroImages, deleteCountry } from "./actions";
+import { reviewProfile, setCountryStatus, resolveReport, backfillHeroImages, cacheHeroImages, resourceCountryHero, deleteCountry } from "./actions";
 import type { Country, Profile, ReportRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -222,6 +222,12 @@ export default async function AdminPage() {
                       confirm="Publish this country? It will go live immediately."
                     />
                   )}
+                  <AdminButton
+                    action={resourceCountryHero.bind(null, c.slug)}
+                    label="🔄 Re-source photo"
+                    className="border border-brand-teal/40 bg-brand-teal/10 text-brand-tealdark hover:bg-brand-teal/20"
+                    confirm={`Fetch a fresh scenic photo for ${c.name} and regenerate its thumbnail?`}
+                  />
                   <AdminButton
                     action={deleteCountry.bind(null, c.id)}
                     label="Delete"

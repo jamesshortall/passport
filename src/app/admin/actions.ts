@@ -122,17 +122,75 @@ export async function cacheHeroImages(): Promise<ActionResult> {
       }
       return { ok: false, message: `Caching failed: ${detail}` };
     }
-    const res = data as { cached?: number; skipped?: number; failed?: string[] };
+    const res = data as {
+      cached?: number;
+      skipped?: number;
+      thumbed?: number;
+      failed?: string[];
+      thumbFailed?: string[];
+    };
     revalidatePath("/admin");
     revalidatePath("/");
     return {
       ok: true,
-      message: `Cached ${res.cached ?? 0} to storage (${res.skipped ?? 0} already done).${
-        res.failed && res.failed.length ? ` Failed: ${res.failed.join(", ")}.` : ""
-      }`,
+      message:
+        `Cached ${res.cached ?? 0} to storage (${res.skipped ?? 0} already done). ` +
+        `Generated ${res.thumbed ?? 0} thumbnails.` +
+        (res.failed && res.failed.length ? ` Failed: ${res.failed.join(", ")}.` : "") +
+        (res.thumbFailed && res.thumbFailed.length
+          ? ` Thumb failed: ${res.thumbFailed.join(", ")}.`
+          : ""),
     };
   } catch (e: any) {
     return { ok: false, message: `Caching failed: ${e?.message ?? "unknown error"}` };
+  }
+}
+
+/** Re-source ONE country's hero with the scenic/landmark query, then cache it
+ *  to Storage and regenerate its thumbnail. Use on countries whose photo is
+ *  off-topic or not country-specific. */
+export async function resourceCountryHero(slug: string): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, message: "Not authorized" };
+
+  const supabase = createSupabaseServerClient();
+  const readError = async (error: any, fallback: string) => {
+    let detail = error?.message ?? fallback;
+    try {
+      const body = await error?.context?.json?.();
+      if (body?.error) detail = body.error;
+    } catch {
+      /* ignore */
+    }
+    return detail;
+  };
+
+  try {
+    const { data: bf, error: bfErr } = await supabase.functions.invoke("backfill-heroes", {
+      body: { slugs: [slug] },
+    });
+    if (bfErr) {
+      return { ok: false, message: `Re-source failed: ${await readError(bfErr, "invoke failed")}` };
+    }
+    if ((bf as { updated?: number })?.updated === 0) {
+      return { ok: false, message: `No new photo found for ${slug}. Try a manual URL below.` };
+    }
+    const { error: chErr } = await supabase.functions.invoke("cache-heroes", { body: {} });
+    if (chErr) {
+      return {
+        ok: false,
+        message: `New photo set for ${slug}, but caching/thumbnailing failed: ${await readError(
+          chErr,
+          "invoke failed"
+        )}. Click "Cache photos to storage" to retry.`,
+      };
+    }
+    revalidatePath("/admin");
+    revalidatePath("/");
+    revalidatePath(`/country/${slug}`);
+    return { ok: true, message: `Re-sourced a scenic photo for ${slug} and refreshed its thumbnail.` };
+  } catch (e: any) {
+    return { ok: false, message: `Re-source failed: ${e?.message ?? "unknown error"}` };
   }
 }
 
