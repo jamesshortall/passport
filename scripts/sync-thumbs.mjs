@@ -15,7 +15,6 @@
 // Manual run:  node scripts/sync-thumbs.mjs
 // Skip:        SKIP_THUMB_SYNC=1 npm run build
 
-import { createClient } from "@supabase/supabase-js";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
@@ -59,6 +58,16 @@ async function fetchOk(u) {
 }
 
 async function main() {
+  // Import lazily, *after* the skip/env checks above. A static `import` is
+  // hoisted and would run before them — so a missing or unresolvable package
+  // at build time would crash the whole build instead of degrading gracefully.
+  let createClient;
+  try {
+    ({ createClient } = await import("@supabase/supabase-js"));
+  } catch {
+    console.warn("[sync-thumbs] @supabase/supabase-js not available — skipping (app will use remote thumbnails).");
+    return;
+  }
   const supabase = createClient(url, key);
   const { data, error } = await supabase
     .from("countries")

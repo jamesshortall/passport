@@ -200,26 +200,86 @@ Deno.serve(async (req) => {
     const { data: cats } = await supabase.from("app_categories").select("id, name");
     const catId = new Map((cats ?? []).map((c: any) => [c.name, c.id]));
 
+    // --- Normalize AI output so the status badge can never contradict `works` --
+    // The model sometimes returns a green "works_fine" severity on a row it also
+    // marked works="no", or omits severity entirely (which used to default to a
+    // green check). The badge is derived from `works`, so reconcile them here
+    // and report every correction so the admin can review it before publishing.
+    const WORKS = new Set(["yes", "no", "partial"]);
+    const SEVERITY = new Set(["blocked", "unreliable", "works_with_caveats", "works_fine"]);
+    const EFFORT = new Set(["none", "before_you_land", "hard_needs_local_id"]);
+
+    // Severities that are consistent with each `works` value (least cautious first).
+    const ALLOWED: Record<string, string[]> = {
+      yes: ["works_fine", "works_with_caveats"],
+      partial: ["works_with_caveats", "unreliable"],
+      no: ["unreliable", "blocked"],
+    };
+    // Caution rank, used to pick the consistent severity closest to what the
+    // model intended rather than blindly flipping to green or red.
+    const RANK: Record<string, number> = {
+      works_fine: 0, works_with_caveats: 1, unreliable: 2, blocked: 3,
+    };
+    const nearest = (allowed: string[], sev: string) =>
+      allowed.reduce(
+        (best, s) => (Math.abs(RANK[s] - RANK[sev]) < Math.abs(RANK[best] - RANK[sev]) ? s : best),
+        allowed[0],
+      );
+
+    const normalized: string[] = [];
     const rows = (parsed.apps ?? [])
       .filter((a: any) => catId.has(a.category))
-      .map((a: any) => ({
-        country_id: country.id,
-        category_id: catId.get(a.category),
-        us_app_name: a.us_app_name,
-        us_app_works: a.us_app_works ?? "no",
-        local_alternative_name: a.local_alternative_name ?? null,
-        why_short: a.why_short ?? "",
-        setup_effort: a.setup_effort ?? "none",
-        detail_paragraph: a.detail_paragraph ?? null,
-        severity: a.severity ?? "works_fine",
-      }));
+      .map((a: any) => {
+        const name = String(a.us_app_name ?? "").trim() || "Unknown app";
+        const label = `${a.category} / ${name}`;
+
+        let works = String(a.us_app_works ?? "").toLowerCase();
+        if (!WORKS.has(works)) {
+          normalized.push(`${label}: works "${a.us_app_works ?? "missing"}" → "partial"`);
+          works = "partial";
+        }
+
+        const allowed = ALLOWED[works];
+        let severity = String(a.severity ?? "").toLowerCase();
+        if (!SEVERITY.has(severity)) {
+          // Missing or invalid: derive from `works` instead of defaulting to green.
+          normalized.push(`${label}: severity "${a.severity ?? "missing"}" → "${allowed[0]}"`);
+          severity = allowed[0];
+        } else if (!allowed.includes(severity)) {
+          // Contradiction, e.g. works="no" with severity="works_fine".
+          const fixed = nearest(allowed, severity);
+          normalized.push(`${label}: works "${works}" contradicts severity "${severity}" → "${fixed}"`);
+          severity = fixed;
+        }
+
+        let setup = String(a.setup_effort ?? "none").toLowerCase();
+        if (!EFFORT.has(setup)) setup = "none";
+
+        return {
+          country_id: country.id,
+          category_id: catId.get(a.category),
+          us_app_name: name,
+          us_app_works: works,
+          local_alternative_name: a.local_alternative_name ?? null,
+          why_short: a.why_short ?? "",
+          setup_effort: setup,
+          detail_paragraph: a.detail_paragraph ?? null,
+          severity,
+        };
+      });
 
     if (rows.length) {
       const { error: aErr } = await supabase.from("country_apps").insert(rows);
       if (aErr) return Response.json({ error: aErr.message }, { status: 500 });
     }
 
-    return Response.json({ ok: true, country_id: country.id, apps: rows.length, status: "draft" });
+    return Response.json({
+      ok: true,
+      country_id: country.id,
+      apps: rows.length,
+      normalized,
+      status: "draft",
+    });
   } catch (e) {
     return Response.json({ error: String(e) }, { status: 500 });
   }

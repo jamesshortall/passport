@@ -277,11 +277,13 @@ export async function generateCountryDraft(name: string): Promise<ActionResult> 
   if (!name.trim()) return { ok: false, message: "Enter a country name" };
 
   const supabase = createSupabaseServerClient();
+  let normalized: string[] = [];
   try {
-    const { error } = await supabase.functions.invoke("draft-country", {
+    const { data, error } = await supabase.functions.invoke("draft-country", {
       body: { country_name: name.trim() },
     });
     if (error) throw error;
+    normalized = (data as { normalized?: string[] })?.normalized ?? [];
   } catch (e: any) {
     return {
       ok: false,
@@ -293,5 +295,10 @@ export async function generateCountryDraft(name: string): Promise<ActionResult> 
   }
 
   revalidatePath("/admin");
-  return { ok: true, message: `Draft requested for ${name}. Review it below before publishing.` };
+  // Surface any status badges the function had to reconcile with `works`, so
+  // the admin knows exactly which rows to eyeball before publishing.
+  const note = normalized.length
+    ? ` ⚠ Auto-corrected ${normalized.length} status badge${normalized.length === 1 ? "" : "s"} that contradicted the works value — review: ${normalized.join("; ")}`
+    : "";
+  return { ok: true, message: `Draft requested for ${name}. Review it below before publishing.${note}` };
 }
