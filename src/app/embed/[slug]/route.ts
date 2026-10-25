@@ -33,8 +33,10 @@ export async function GET(
   const headers = {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "public, max-age=300",
-    // Allow embedding anywhere (this is a public widget by design).
-    "X-Frame-Options": "ALLOWALL",
+    // Allow embedding anywhere (this is a public widget by design). The
+    // site-wide headers in next.config.mjs exclude /embed for this reason.
+    "Content-Security-Policy": "frame-ancestors *",
+    "X-Content-Type-Options": "nosniff",
   };
 
   if (!country) {
