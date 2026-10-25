@@ -3,14 +3,54 @@
 // since the last run, send ONE summary email. Schedule daily/weekly via
 // Supabase cron (pg_cron / scheduled functions) — never per-change.
 //
-// Deploy:  supabase functions deploy digest-favorites
-// Secrets: RESEND_API_KEY, RESEND_FROM
-// Schedule (daily 8am UTC): see supabase/README or dashboard scheduled functions.
+// Security: this function runs with the service role and emails every user who
+// saved a changed country, so it must only be callable by the scheduler. Every
+// request must carry `x-cron-secret: <CRON_SECRET>`; the function fails closed
+// (503) when the secret isn't configured. Because the scheduler has no user JWT,
+// deploy with JWT verification off and rely on the shared secret instead.
+//
+// Deploy:  supabase functions deploy digest-favorites --no-verify-jwt
+// Secrets: RESEND_API_KEY, RESEND_FROM, CRON_SECRET (long random string, e.g. `openssl rand -hex 32`)
+// Schedule (daily 8am UTC) with pg_cron + pg_net, sending the header:
+//   select cron.schedule('digest-favorites', '0 8 * * *', $$
+//     select net.http_post(
+//       url     := 'https://<project-ref>.supabase.co/functions/v1/digest-favorites',
+//       headers := jsonb_build_object('content-type', 'application/json',
+//                                     'x-cron-secret', '<CRON_SECRET>'),
+//       body    := '{}'::jsonb);
+//   $$);
 //
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-Deno.serve(async (_req) => {
+// Constant-time string comparison: hash both sides to equal-length digests,
+// then XOR every byte so timing doesn't depend on where they first differ.
+async function secretsMatch(a: string, b: string): Promise<boolean> {
+  const enc = new TextEncoder();
+  const [da, db] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(a)),
+    crypto.subtle.digest("SHA-256", enc.encode(b)),
+  ]);
+  const ua = new Uint8Array(da);
+  const ub = new Uint8Array(db);
+  let diff = 0;
+  for (let i = 0; i < ua.length; i++) diff |= ua[i] ^ ub[i];
+  return diff === 0 && a.length === b.length;
+}
+
+Deno.serve(async (req) => {
+  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+  // --- Gate: shared secret from the scheduler ------------------------------
+  const expected = Deno.env.get("CRON_SECRET") ?? "";
+  if (!expected) {
+    return Response.json({ error: "CRON_SECRET not configured" }, { status: 503 });
+  }
+  const provided = req.headers.get("x-cron-secret") ?? "";
+  if (!(await secretsMatch(provided, expected))) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
