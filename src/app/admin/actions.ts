@@ -24,16 +24,20 @@ export async function reviewProfile(
       reviewed_by: admin.user_id,
     })
     .eq("id", profileId)
-    .select("email")
+    .select("user_id")
     .maybeSingle();
 
   if (error) return { ok: false, message: error.message };
 
   // Best-effort approval email; ignore failures so the action still succeeds.
+  // The edge function is admin-gated (our session JWT is forwarded) and looks
+  // the recipient address up itself — we only tell it WHO was reviewed.
   try {
-    await supabase.functions.invoke("notify-approval", {
-      body: { email: data?.email, decision },
-    });
+    if (data?.user_id) {
+      await supabase.functions.invoke("notify-approval", {
+        body: { user_id: data.user_id, decision },
+      });
+    }
   } catch {
     /* email provider not configured yet — non-fatal */
   }
