@@ -32,9 +32,10 @@ function formatDate(iso: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const country = await getCountryBySlug(params.slug);
+  const { slug } = await params;
+  const country = await getCountryBySlug(slug);
   if (!country) return { title: "Country not found" };
   return {
     title: `${country.name} — which apps to use`,
@@ -45,9 +46,10 @@ export async function generateMetadata({
 export default async function CountryPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const country = await getCountryBySlug(params.slug);
+  const { slug } = await params;
+  const country = await getCountryBySlug(slug);
   if (!country) notFound();
 
   const categories = await getCategoriesForCountry(country.id);

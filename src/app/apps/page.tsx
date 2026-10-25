@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "All apps" };
  * Uses the free-text us_app_name until the canonical `apps` table is populated.
  */
 export default async function AppsIndexPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("country_apps")
     .select("us_app_name, country_id, countries!inner(status)")

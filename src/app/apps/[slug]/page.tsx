@@ -15,18 +15,20 @@ function slugify(name: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  return { title: `${params.slug} — country by country` };
+  const { slug } = await params;
+  return { title: `${slug} — country by country` };
 }
 
 /** Phase 2 — one app, every country where it's tracked. */
 export default async function AppDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const supabase = createSupabaseServerClient();
+  const { slug } = await params;
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("country_apps")
     .select(
@@ -35,7 +37,7 @@ export default async function AppDetailPage({
     .eq("countries.status", "published");
 
   const rows = ((data as any[]) ?? []).filter(
-    (r) => slugify(r.us_app_name) === params.slug
+    (r) => slugify(r.us_app_name) === slug
   );
 
   if (rows.length === 0) notFound();

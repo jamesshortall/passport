@@ -12,7 +12,7 @@ import type {
  * we filter explicitly too for clarity. Rendered per-request (no static gen).
  */
 export async function getPublishedCountries(): Promise<Country[]> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("countries")
     .select("*")
@@ -28,7 +28,7 @@ export async function getPublishedCountries(): Promise<Country[]> {
 
 /** A single country by slug. Returns null if not found or not visible. */
 export async function getCountryBySlug(slug: string): Promise<Country | null> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("countries")
     .select("*")
@@ -49,7 +49,7 @@ export async function getCountryBySlug(slug: string): Promise<Country | null> {
 export async function getCategoriesForCountry(
   countryId: string
 ): Promise<CategoryWithApps[]> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const [{ data: categories }, { data: apps }] = await Promise.all([
     supabase.from("app_categories").select("*").order("sort_order"),
@@ -80,7 +80,7 @@ export function latestVerifiedAt(cats: CategoryWithApps[]): string | null {
 
 /** Recent change-log entries for the /updates feed. */
 export async function getRecentChanges(limit = 50): Promise<ChangeLogRow[]> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("change_log")
     .select("*")

@@ -18,14 +18,15 @@ function esc(s: string) {
  */
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const supabase = createSupabaseServerClient();
+  const { slug } = await params;
+  const supabase = await createSupabaseServerClient();
 
   const { data: country } = await supabase
     .from("countries")
     .select("id, name, slug, flag_emoji, status")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
 

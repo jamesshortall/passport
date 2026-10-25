@@ -28,7 +28,7 @@ export default async function AdminPage() {
     );
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const staleCutoff = new Date(Date.now() - STALE_DAYS * 86400000).toISOString();
 
   const [

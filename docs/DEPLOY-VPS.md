@@ -1,7 +1,7 @@
 # Deploying AppPassport to an Ionos VPS
 
-AppPassport is a standard Next.js 14 app running in Node's production server
-(`next start`). Any Linux VPS with Node 20+ works; below is an Ubuntu/Debian
+AppPassport is a standard Next.js 16 app running in Node's production server
+(`next start`). Any Linux VPS with Node 20.9+ works (Node 22 LTS recommended); below is an Ubuntu/Debian
 setup with **nginx** as a reverse proxy, **PM2** to keep the process alive, and
 **Let's Encrypt** for HTTPS on `passport.traveltechnician.info`.
 
@@ -13,8 +13,8 @@ public IP before requesting a certificate.
 ## 1. Server prerequisites
 
 ```bash
-# Node 20 LTS
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node 22 LTS (Next.js 16 needs Node >= 20.9)
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs nginx
 sudo npm install -g pm2
 ```

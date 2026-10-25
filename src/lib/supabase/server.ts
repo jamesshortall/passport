@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
@@ -7,9 +8,11 @@ type CookieToSet = { name: string; value: string; options?: CookieOptions };
  * Supabase client for Server Components, Route Handlers and Server Actions.
  * Reads the auth session from cookies. Respects RLS as the logged-in user
  * (or anon), which is exactly what we want for public reads.
+ *
+ * Async because `cookies()` is asynchronous in Next.js 15+.
  */
-export function createSupabaseServerClient() {
-  const cookieStore = cookies();
+export async function createSupabaseServerClient() {
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,7 +29,7 @@ export function createSupabaseServerClient() {
             );
           } catch {
             // Called from a Server Component where cookies are read-only.
-            // Session refresh is handled by middleware instead — safe to ignore.
+            // Session refresh is handled by the proxy instead — safe to ignore.
           }
         },
       },
@@ -40,7 +43,6 @@ export function createSupabaseServerClient() {
  * import this into a Client Component.
  */
 export function createSupabaseAdminClient() {
-  const { createClient } = require("@supabase/supabase-js");
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,

@@ -15,7 +15,7 @@ export async function reviewProfile(
   const admin = await requireAdmin();
   if (!admin) return { ok: false, message: "Not authorized" };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("profiles")
     .update({
@@ -50,7 +50,7 @@ export async function setCountryStatus(
   const admin = await requireAdmin();
   if (!admin) return { ok: false, message: "Not authorized" };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("countries")
     .update({ status })
@@ -75,7 +75,7 @@ export async function backfillHeroImages(): Promise<ActionResult> {
   const admin = await requireAdmin();
   if (!admin) return { ok: false, message: "Not authorized" };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase.functions.invoke("backfill-heroes", { body: {} });
     if (error) {
@@ -109,7 +109,7 @@ export async function cacheHeroImages(): Promise<ActionResult> {
   const admin = await requireAdmin();
   if (!admin) return { ok: false, message: "Not authorized" };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase.functions.invoke("cache-heroes", { body: {} });
     if (error) {
@@ -153,7 +153,7 @@ export async function resourceCountryHero(slug: string): Promise<ActionResult> {
   const admin = await requireAdmin();
   if (!admin) return { ok: false, message: "Not authorized" };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const readError = async (error: any, fallback: string) => {
     let detail = error?.message ?? fallback;
     try {
@@ -203,7 +203,7 @@ export async function setCountryHeroImage(
   if (!admin) return { ok: false, message: "Not authorized" };
 
   const trimmed = url.trim();
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("countries")
     .update({ hero_image_url: trimmed || null })
@@ -222,7 +222,7 @@ export async function deleteCountry(countryId: string): Promise<ActionResult> {
   const admin = await requireAdmin();
   if (!admin) return { ok: false, message: "Not authorized" };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: country } = await supabase
     .from("countries")
@@ -258,7 +258,7 @@ export async function resolveReport(reportId: string): Promise<ActionResult> {
   const admin = await requireAdmin();
   if (!admin) return { ok: false, message: "Not authorized" };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("reports")
     .update({ status: "reviewed" })
@@ -276,7 +276,7 @@ export async function generateCountryDraft(name: string): Promise<ActionResult> 
   if (!admin) return { ok: false, message: "Not authorized" };
   if (!name.trim()) return { ok: false, message: "Enter a country name" };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   let normalized: string[] = [];
   try {
     const { data, error } = await supabase.functions.invoke("draft-country", {

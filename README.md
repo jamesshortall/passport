@@ -9,7 +9,7 @@ Live target: `passport.traveltechnician.info`
 
 ## Stack
 
-- **Next.js 14 (App Router)** + React + TypeScript
+- **Next.js 16 (App Router)** + React 19 + TypeScript (Node 20.9+; Node 22 LTS recommended)
 - **Tailwind CSS**
 - **Supabase** — Postgres, Auth, Edge Functions, Row Level Security
 - Deploy target: **Ionos VPS** (Node + nginx + PM2) — see
@@ -134,5 +134,6 @@ Schedule `digest-favorites` daily/weekly (Supabase scheduled functions / pg_cron
 npm run dev        # local dev
 npm run build      # production build
 npm run typecheck  # tsc --noEmit
-npm run lint       # next lint
+npm run lint       # eslint . (flat config in eslint.config.mjs)
+npm audit          # dependency advisories — keep at 0 critical / 0 high
 ```

@@ -10,7 +10,7 @@ export default async function UpdatesPage() {
   const changes = await getRecentChanges(80);
 
   // Resolve country names for display.
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data: countries } = await supabase.from("countries").select("id, name, slug, flag_emoji");
   const byId = new Map((countries ?? []).map((c: any) => [c.id, c]));
 
