@@ -33,7 +33,7 @@ export default function CountryHero({
       <div
         className="pointer-events-none absolute -right-8 -top-8 h-56 w-56 opacity-10"
         style={{
-          backgroundImage: "url(/brand/emblem-mark.png)",
+          backgroundImage: "url(/brand/emblem-mark.webp)",
           backgroundSize: "contain",
           backgroundRepeat: "no-repeat",
         }}
