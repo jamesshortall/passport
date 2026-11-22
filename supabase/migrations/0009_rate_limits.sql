@@ -1,4 +1,4 @@
--- 0008: fixed-window rate limiting for public edge functions.
+-- 0009: fixed-window rate limiting for public edge functions.
 --
 -- Edge functions are stateless, so counters live in Postgres. The table is
 -- RLS-enabled with NO policies: only the service role (edge functions) can

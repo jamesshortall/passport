@@ -5,34 +5,54 @@
 // addresses. The visitor's email (if provided and valid) becomes the reply-to.
 //
 // Abuse controls:
-//   * CORS restricted to the site origin(s) — browsers elsewhere can't call it.
-//   * Per-IP rate limit (5 / 10 min) and a global ceiling (60 / hour), backed by
-//     public.consume_rate_limit (migration 0008). Fails closed; the client
-//     falls back to a mailto: link so nothing is lost.
+//   * CORS restricted to the site origin — browsers elsewhere get 403. Set
+//     SUPPORT_ALLOW_LOCALHOST=1 to also accept http://localhost:3000 in dev.
+//   * Per-IP rate limit (5 / hour, keyed on a SHA-256 of the first X-Forwarded-For
+//     hop) and a global ceiling (60 / hour), backed by public.consume_rate_limit
+//     (migration 0009). Fails closed; the client falls back to mailto: so no
+//     message is lost.
+//   * Optional Cloudflare Turnstile: when TURNSTILE_SECRET is set, the request
+//     must include a valid `turnstile_token` (the form needs the matching site
+//     key). Not required — leave the secret unset to skip the check.
 //   * Strict input validation: whitelisted `kind`, bounded lengths, RFC-ish
-//     email check for reply-to (prevents header injection), bounded meta.
+//     email check for reply-to (prevents header injection), bounded meta,
+//     CR/LF stripped from the subject. Errors returned to callers are generic.
 //
 // Deploy:  supabase functions deploy support-message --no-verify-jwt
 // Secrets: supabase secrets set RESEND_API_KEY=re_...  RESEND_FROM="AppPassport <hello@traveltechnician.info>"
-// Optional: SUPPORT_ALLOWED_ORIGINS="https://passport.traveltechnician.info,http://localhost:3000"
+// Optional: supabase secrets set SUPPORT_ALLOW_LOCALHOST=1   TURNSTILE_SECRET=0x...
 //
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPPORT_TO = "support@traveltechnician.info";
 
-const DEFAULT_ORIGINS = ["https://passport.traveltechnician.info", "http://localhost:3000"];
-const ALLOWED_ORIGINS = new Set(
-  (Deno.env.get("SUPPORT_ALLOWED_ORIGINS") ?? DEFAULT_ORIGINS.join(","))
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean),
-);
+const ALLOWED_ORIGINS = new Set<string>([
+  "https://passport.traveltechnician.info",
+  ...(Deno.env.get("SUPPORT_ALLOW_LOCALHOST") === "1" ? ["http://localhost:3000"] : []),
+]);
 
 const PER_IP_LIMIT = 5; // submissions
-const PER_IP_WINDOW = 10 * 60; // seconds
+const PER_IP_WINDOW = 60 * 60; // seconds (1 hour)
 const GLOBAL_LIMIT = 60;
 const GLOBAL_WINDOW = 60 * 60;
+
+async function turnstileOk(token: unknown, ip: string): Promise<boolean> {
+  const secret = Deno.env.get("TURNSTILE_SECRET");
+  if (!secret) return true; // not configured — check disabled
+  if (typeof token !== "string" || !token) return false;
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ secret, response: token, remoteip: ip }),
+    });
+    const j = await res.json();
+    return j?.success === true;
+  } catch {
+    return false;
+  }
+}
 
 const KINDS = new Set(["contact", "feedback"]);
 // Pragmatic email check: one @, no whitespace/control chars, sane length.
@@ -108,6 +128,10 @@ Deno.serve(async (req) => {
     } catch {
       return Response.json({ error: "Invalid JSON body" }, { status: 400, headers: CORS });
     }
+    if (!(await turnstileOk(input?.turnstile_token, clientIp(req)))) {
+      return Response.json({ error: "Verification failed" }, { status: 403, headers: CORS });
+    }
+
     const kind = KINDS.has(input?.kind) ? (input.kind as string) : "contact";
     const subject = typeof input?.subject === "string" ? input.subject.trim() : "";
     const body = typeof input?.body === "string" ? input.body.trim() : "";
