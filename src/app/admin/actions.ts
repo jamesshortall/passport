@@ -6,6 +6,19 @@ import { requireAdmin } from "@/lib/auth";
 
 type ActionResult = { ok: boolean; message?: string };
 
+/**
+ * Public pages are cached (ISR, 5 min). Call after ANY content change so the
+ * edit is visible immediately instead of after the next revalidation window.
+ */
+function revalidatePublicContent(slug?: string | null) {
+  revalidatePath("/");
+  revalidatePath("/country/[slug]", "page");
+  revalidatePath("/apps");
+  revalidatePath("/apps/[slug]", "page");
+  revalidatePath("/updates");
+  if (slug) revalidatePath(`/country/${slug}`);
+}
+
 /** Approve or reject a pending profile. Writes reviewed_by/at and (best-effort)
  *  notifies the user by email via the notify-approval edge function. */
 export async function reviewProfile(
@@ -24,18 +37,19 @@ export async function reviewProfile(
       reviewed_by: admin.user_id,
     })
     .eq("id", profileId)
-    .select("user_id")
+    .select("id")
     .maybeSingle();
 
   if (error) return { ok: false, message: error.message };
 
   // Best-effort approval email; ignore failures so the action still succeeds.
-  // The edge function is admin-gated (our session JWT is forwarded) and looks
-  // the recipient address up itself — we only tell it WHO was reviewed.
+  // The edge function is admin-gated (functions.invoke on the server client
+  // forwards our session JWT) and looks the recipient address up itself — we
+  // only tell it WHICH profile was reviewed.
   try {
-    if (data?.user_id) {
+    if (data?.id) {
       await supabase.functions.invoke("notify-approval", {
-        body: { user_id: data.user_id, decision },
+        body: { profile_id: data.id, decision },
       });
     }
   } catch {
@@ -55,10 +69,12 @@ export async function setCountryStatus(
   if (!admin) return { ok: false, message: "Not authorized" };
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("countries")
     .update({ status })
-    .eq("id", countryId);
+    .eq("id", countryId)
+    .select("slug")
+    .maybeSingle();
 
   if (error) return { ok: false, message: error.message };
 
@@ -70,7 +86,7 @@ export async function setCountryStatus(
   });
 
   revalidatePath("/admin");
-  revalidatePath("/");
+  revalidatePublicContent(data?.slug);
   return { ok: true };
 }
 
@@ -95,7 +111,7 @@ export async function backfillHeroImages(): Promise<ActionResult> {
     }
     const res = data as { updated?: number; missed?: string[] };
     revalidatePath("/admin");
-    revalidatePath("/");
+    revalidatePublicContent();
     return {
       ok: true,
       message: `Added photos to ${res.updated ?? 0} countries.${
@@ -134,7 +150,7 @@ export async function cacheHeroImages(): Promise<ActionResult> {
       thumbFailed?: string[];
     };
     revalidatePath("/admin");
-    revalidatePath("/");
+    revalidatePublicContent();
     return {
       ok: true,
       message:
@@ -190,8 +206,7 @@ export async function resourceCountryHero(slug: string): Promise<ActionResult> {
       };
     }
     revalidatePath("/admin");
-    revalidatePath("/");
-    revalidatePath(`/country/${slug}`);
+    revalidatePublicContent(slug);
     return { ok: true, message: `Re-sourced a scenic photo for ${slug} and refreshed its thumbnail.` };
   } catch (e: any) {
     return { ok: false, message: `Re-source failed: ${e?.message ?? "unknown error"}` };
@@ -207,15 +222,20 @@ export async function setCountryHeroImage(
   if (!admin) return { ok: false, message: "Not authorized" };
 
   const trimmed = url.trim();
+  if (trimmed && !/^https:\/\/[^\s]+$/i.test(trimmed)) {
+    return { ok: false, message: "Hero image must be an https:// URL" };
+  }
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("countries")
     .update({ hero_image_url: trimmed || null })
-    .eq("id", countryId);
+    .eq("id", countryId)
+    .select("slug")
+    .maybeSingle();
 
   if (error) return { ok: false, message: error.message };
   revalidatePath("/admin");
-  revalidatePath(`/country`);
+  revalidatePublicContent(data?.slug);
   return { ok: true, message: trimmed ? "Hero image updated" : "Hero image cleared" };
 }
 
@@ -253,7 +273,7 @@ export async function deleteCountry(countryId: string): Promise<ActionResult> {
   if (error) return { ok: false, message: error.message };
 
   revalidatePath("/admin");
-  revalidatePath("/");
+  revalidatePublicContent(country?.slug);
   return { ok: true, message: `Deleted ${country?.name ?? "country"}.` };
 }
 
