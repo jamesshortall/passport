@@ -20,7 +20,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
   const { data } = await supabase
     .from("profiles")
-    .select("*")
+    .select("id, user_id, email, role, approval_status, requested_at, reviewed_at, reviewed_by")
     .eq("user_id", user.id)
     .maybeSingle();
 
