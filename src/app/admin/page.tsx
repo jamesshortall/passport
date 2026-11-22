@@ -6,10 +6,13 @@ import GenerateDraftForm from "@/components/admin/GenerateDraftForm";
 import HeroImageInput from "@/components/admin/HeroImageInput";
 import { reviewProfile, setCountryStatus, resolveReport, backfillHeroImages, cacheHeroImages, resourceCountryHero, deleteCountry } from "./actions";
 import type { Country, Profile, ReportRow } from "@/lib/types";
+import { COUNTRY_COLUMNS } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
 const STALE_DAYS = 90;
+// Admin lists are bounded; beyond this the UI needs pagination, not a bigger page.
+const LIST_LIMIT = 200;
 
 export default async function AdminPage() {
   const admin = await requireAdmin();
@@ -37,9 +40,19 @@ export default async function AdminPage() {
     { data: reports },
     { data: staleApps },
   ] = await Promise.all([
-    supabase.from("profiles").select("*").eq("approval_status", "pending").order("requested_at"),
-    supabase.from("countries").select("*").order("name"),
-    supabase.from("reports").select("*").eq("status", "open").order("created_at", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("id, user_id, email, role, approval_status, requested_at, reviewed_at, reviewed_by")
+      .eq("approval_status", "pending")
+      .order("requested_at")
+      .limit(LIST_LIMIT),
+    supabase.from("countries").select(COUNTRY_COLUMNS).order("name").limit(LIST_LIMIT),
+    supabase
+      .from("reports")
+      .select("id, country_apps_id, user_id, note, status, created_at")
+      .eq("status", "open")
+      .order("created_at", { ascending: false })
+      .limit(LIST_LIMIT),
     supabase
       .from("country_apps")
       .select("id, us_app_name, country_id, last_verified_at")
@@ -115,7 +128,7 @@ export default async function AdminPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Link
-                        href={`/country/${c.slug}`}
+                        href={`/admin/preview/${c.slug}`}
                         target="_blank"
                         className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-brand-navy hover:bg-slate-50"
                       >
@@ -202,7 +215,7 @@ export default async function AdminPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/country/${c.slug}`}
+                    href={c.status === "published" ? `/country/${c.slug}` : `/admin/preview/${c.slug}`}
                     target="_blank"
                     className="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium text-brand-navy hover:bg-slate-50"
                   >

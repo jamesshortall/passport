@@ -10,6 +10,12 @@ type CookieToSet = { name: string; value: string; options?: CookieOptions };
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // Anonymous visitors (no Supabase auth cookie) have no session to refresh —
+  // skip the round-trip to Supabase so cached public pages stay fast.
+  if (!request.cookies.getAll().some((c) => c.name.startsWith("sb-"))) {
+    return response;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

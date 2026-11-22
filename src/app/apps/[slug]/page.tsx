@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPublishedAppRows, getPublishedAppSlugs, slugifyAppName } from "@/lib/queries";
 import SeverityTag from "@/components/SeverityTag";
 import Flag from "@/components/Flag";
-import type { Severity } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+// Public catalog page: cached and regenerated every 5 minutes (ISR). Known app
+// slugs are pre-built; new ones render on first request.
+export const revalidate = 300;
+export const dynamicParams = true;
 
-function slugify(name: string) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+export async function generateStaticParams() {
+  const slugs = await getPublishedAppSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -28,21 +31,13 @@ export default async function AppDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase
-    .from("country_apps")
-    .select(
-      "us_app_name, local_alternative_name, severity, why_short, countries!inner(name, slug, flag_emoji, status)"
-    )
-    .eq("countries.status", "published");
-
-  const rows = ((data as any[]) ?? []).filter(
-    (r) => slugify(r.us_app_name) === slug
+  const rows = (await getPublishedAppRows()).filter(
+    (r) => slugifyAppName(r.us_app_name) === slug
   );
 
   if (rows.length === 0) notFound();
 
-  const appName = rows[0].us_app_name as string;
+  const appName = rows[0].us_app_name;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -67,7 +62,7 @@ export default async function AppDetailPage({
                 >
                   <Flag emoji={r.countries.flag_emoji} size="1.25rem" /> {r.countries.name}
                 </Link>
-                <SeverityTag severity={r.severity as Severity} />
+                <SeverityTag severity={r.severity} />
               </div>
               <p className="mt-1 text-sm text-slate-600">{r.why_short}</p>
               {r.local_alternative_name && (

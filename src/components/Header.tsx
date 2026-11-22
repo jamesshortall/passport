@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
-import { getSessionUser } from "@/lib/auth";
-import SignOutButton from "./SignOutButton";
+import AuthNav from "./AuthNav";
 
-export default async function Header() {
-  const user = await getSessionUser();
-
+/**
+ * Site header. Deliberately reads NO session on the server: public pages are
+ * cached (ISR), so any per-user state here would be served to everyone. The
+ * auth controls live in the client-side <AuthNav />.
+ */
+export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5">
         <Link href="/" className="flex items-center" aria-label="AppPassport home">
           {/* Plain img so the SVG logo renders crisply without next/image config */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/brand/apppassport-logo.svg"
             alt="AppPassport by The Travel Technician"
@@ -34,11 +37,6 @@ export default async function Header() {
           <Link href="/updates" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy lg:inline">
             Updates
           </Link>
-          {user && (
-            <Link href="/support" className="hidden rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy lg:inline">
-              Support
-            </Link>
-          )}
           <a
             href={SITE.brand.main}
             target="_blank"
@@ -48,26 +46,9 @@ export default async function Header() {
             The Travel Technician ↗
           </a>
 
-          {/* Auth controls */}
+          {/* Auth controls (client-side; see AuthNav) */}
           <span className="mx-1 hidden h-5 w-px bg-slate-200 sm:inline-block" aria-hidden />
-          {user ? (
-            <span className="flex items-center gap-1.5">
-              <Link
-                href="/account"
-                className="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-brand-navy"
-              >
-                Account
-              </Link>
-              <SignOutButton />
-            </span>
-          ) : (
-            <Link
-              href="/login"
-              className="rounded-full bg-brand-navy px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-navylight"
-            >
-              Sign in
-            </Link>
-          )}
+          <AuthNav />
         </nav>
       </div>
     </header>

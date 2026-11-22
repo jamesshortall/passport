@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
 import { getRecentChanges } from "@/lib/queries";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabasePublicClient } from "@/lib/supabase/public";
 import Flag from "@/components/Flag";
 
-export const dynamic = "force-dynamic";
+// Public feed: cached and regenerated every 5 minutes (ISR).
+export const revalidate = 300;
 export const metadata: Metadata = { title: "Recent updates" };
+
+type CountryRef = { id: string; name: string; slug: string; flag_emoji: string | null };
 
 export default async function UpdatesPage() {
   const changes = await getRecentChanges(80);
 
-  // Resolve country names for display.
-  const supabase = await createSupabaseServerClient();
-  const { data: countries } = await supabase.from("countries").select("id, name, slug, flag_emoji");
-  const byId = new Map((countries ?? []).map((c: any) => [c.id, c]));
+  // Resolve country names for display (published only, via anon RLS).
+  const supabase = createSupabasePublicClient();
+  const { data: countries } = await supabase
+    .from("countries")
+    .select("id, name, slug, flag_emoji")
+    .limit(500);
+  const byId = new Map(((countries as CountryRef[]) ?? []).map((c) => [c.id, c]));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">

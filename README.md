@@ -15,12 +15,23 @@ Live target: `passport.traveltechnician.info`
 - Deploy target: **Ionos VPS** (Node + nginx + PM2) — see
   [`docs/DEPLOY-VPS.md`](docs/DEPLOY-VPS.md). Run it locally first: [`docs/LOCAL-DEV.md`](docs/LOCAL-DEV.md)
 
-## Key architecture decision
+## Key architecture decisions
 
-Country pages are **server-rendered per request** (`export const dynamic =
-"force-dynamic"`). There is intentionally **no `generateStaticParams`**, so a
-country published in Supabase is live immediately — no redeploy. Confirm in the
-build output that `/` and `/country/[slug]` are marked `ƒ (Dynamic)`.
+**Public pages are cached (ISR).** `/`, `/country/[slug]`, `/apps`,
+`/apps/[slug]`, `/updates` and `/embed/[slug]` use `export const revalidate =
+300` and read through a cookie-less anon client (`src/lib/supabase/public.ts`),
+so RLS only ever returns published content and nothing per-user lands in cached
+HTML. Published slugs are pre-built (`generateStaticParams`) and
+`dynamicParams = true` lets a newly published country render on first request;
+admin actions call `revalidatePath` so edits are visible immediately. Confirm in
+the build output that these routes are `○`/`●`, not `ƒ`. Per-user pages
+(`/account`, `/admin`, `/support`, `/plan`, `/auth/callback`) stay dynamic.
+
+**Auth state is client-side.** The header/footer never read the session on
+the server; `src/components/AuthNav.tsx` resolves it in the browser.
+
+**Security posture** (headers, CSP, image hosts, edge-function auth, rate
+limits) is documented in [`docs/SECURITY.md`](docs/SECURITY.md).
 
 ---
 

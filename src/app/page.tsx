@@ -7,8 +7,10 @@ import PromoCTA from "@/components/PromoCTA";
 import RotatingPromos from "@/components/RotatingPromos";
 import { SITE } from "@/lib/constants";
 
-// Rendered dynamically so newly published countries appear without a redeploy.
-export const dynamic = "force-dynamic";
+// Cached and regenerated every 5 minutes (ISR); admin actions also revalidate
+// it immediately, so newly published countries appear without a redeploy.
+// Nothing per-user is rendered here on the server (see AuthNav).
+export const revalidate = 300;
 
 // Decorative hero photo (loaded as a CSS background so a broken URL simply
 // reveals the gradient underneath — no broken-image icon).
@@ -45,7 +47,7 @@ export default async function HomePage() {
       key="site"
       accent="teal"
       href={SITE.brand.main}
-      logoSrc="/brand/tt-logo.png"
+      logoSrc="/brand/tt-logo.webp"
       logoAlt="Travel Technician — Smarter Travel. Better Rewards."
       eyebrow="From The Travel Technician"
       title="Visit Travel Technician"
@@ -56,7 +58,7 @@ export default async function HomePage() {
       key="blog"
       accent="navy"
       href={SITE.brand.blog}
-      logoSrc="/brand/tt-blog.png"
+      logoSrc="/brand/tt-blog.webp"
       logoAlt="The Travel Technician — Travel Blog"
       eyebrow="From The Travel Technician"
       title="Read the Travel Blog"
