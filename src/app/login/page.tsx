@@ -5,14 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { SITE } from "@/lib/constants";
+import { safeNext } from "@/lib/safeRedirect";
 
 type Mode = "signin" | "signup";
-
-// Only allow same-site relative redirects to avoid open-redirect issues.
-function safeNext(raw: string | null): string {
-  if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
-  return "/account";
-}
 
 export default function LoginPage() {
   const router = useRouter();
