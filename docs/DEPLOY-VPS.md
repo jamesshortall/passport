@@ -1,7 +1,7 @@
 # Deploying AppPassport to an Ionos VPS
 
-AppPassport is a standard Next.js 14 app running in Node's production server
-(`next start`). Any Linux VPS with Node 20+ works; below is an Ubuntu/Debian
+AppPassport is a standard Next.js 16 app running in Node's production server
+(`next start`). Any Linux VPS with Node 20.9+ works (Node 22 LTS recommended); below is an Ubuntu/Debian
 setup with **nginx** as a reverse proxy, **PM2** to keep the process alive, and
 **Let's Encrypt** for HTTPS on `passport.traveltechnician.info`.
 
@@ -13,8 +13,8 @@ public IP before requesting a certificate.
 ## 1. Server prerequisites
 
 ```bash
-# Node 20 LTS
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node 22 LTS (Next.js 16 needs Node >= 20.9)
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs nginx
 sudo npm install -g pm2
 ```
@@ -36,8 +36,11 @@ Create `/var/www/apppassport/.env.local` (never commit it):
 NEXT_PUBLIC_SUPABASE_URL=https://xkaeaupdopopjbhrxzsp.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon / publishable key>
 NEXT_PUBLIC_SITE_URL=https://passport.traveltechnician.info
-SUPABASE_SERVICE_ROLE_KEY=<service_role key>   # server-only; used by admin actions
 ```
+
+> The web app does **not** need `SUPABASE_SERVICE_ROLE_KEY` — remove it from the
+> VPS environment if it is still there. Admin writes go through RLS as the
+> signed-in admin; privileged work runs in Supabase Edge Functions.
 
 > Next.js inlines `NEXT_PUBLIC_*` at **build time** — always build *after*
 > writing `.env.local`, and rebuild if you change them.
@@ -59,8 +62,19 @@ The app now listens on `http://127.0.0.1:3000`.
 `/etc/nginx/sites-available/apppassport`:
 
 ```nginx
+# /etc/nginx/nginx.conf (http block) — don't advertise the nginx version.
+# Also keep nginx itself current: 1.20 is end-of-life.
+server_tokens off;
+
+# Port 80: redirect everything to HTTPS (certbot adds this too; keep one copy).
 server {
     listen 80;
+    server_name passport.traveltechnician.info;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;   # certbot fills in the ssl_certificate lines
     server_name passport.traveltechnician.info;
 
     # Serve country thumbnails straight from disk (populated by the "prebuild"
@@ -91,6 +105,10 @@ server {
         proxy_buffer_size       16k;
         proxy_buffers           8 16k;
         proxy_busy_buffers_size 32k;
+
+        # Security headers (CSP, HSTS, X-Frame-Options, ...) are set by the
+        # Next app itself (next.config.mjs). Do NOT add_header duplicates here
+        # and don't use proxy_hide_header on them — pass them through as-is.
     }
 }
 ```
@@ -134,8 +152,13 @@ Edge functions still deploy to Supabase (not the VPS):
 ```bash
 supabase functions deploy draft-country
 supabase functions deploy notify-approval
-supabase functions deploy digest-favorites
+supabase functions deploy digest-favorites --no-verify-jwt   # guarded by CRON_SECRET instead
+supabase functions deploy support-message --no-verify-jwt    # public form; CORS + rate limited
 supabase secrets set OPENAI_API_KEY=... RESEND_API_KEY=... RESEND_FROM="AppPassport <hello@traveltechnician.info>"
+supabase secrets set CRON_SECRET=$(openssl rand -hex 32)
 ```
 
-Schedule `digest-favorites` daily/weekly via Supabase scheduled functions.
+Schedule `digest-favorites` daily/weekly via pg_cron + pg_net (or the dashboard
+scheduler) and send the `x-cron-secret: <CRON_SECRET>` header with the call —
+see the header comment in `supabase/functions/digest-favorites/index.ts`.
+Apply any new SQL migrations in `supabase/migrations/` first.

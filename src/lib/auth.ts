@@ -3,7 +3,7 @@ import type { Profile } from "./types";
 
 /** The signed-in auth user (or null). Lightweight — no profile join. */
 export async function getSessionUser() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -12,7 +12,7 @@ export async function getSessionUser() {
 
 /** The signed-in user's profile, or null if not signed in. */
 export async function getCurrentProfile(): Promise<Profile | null> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -20,7 +20,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
   const { data } = await supabase
     .from("profiles")
-    .select("*")
+    .select("id, user_id, email, role, approval_status, requested_at, reviewed_at, reviewed_by")
     .eq("user_id", user.id)
     .maybeSingle();
 

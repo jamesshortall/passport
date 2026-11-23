@@ -59,7 +59,7 @@ export default function AboutPage() {
         <div
           className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 opacity-10"
           style={{
-            backgroundImage: "url(/brand/emblem-mark.png)",
+            backgroundImage: "url(/brand/emblem-mark.webp)",
             backgroundSize: "contain",
             backgroundRepeat: "no-repeat",
           }}
@@ -119,7 +119,7 @@ export default function AboutPage() {
       <section className="mt-12 overflow-hidden rounded-3xl border border-slate-200 bg-white">
         <div className="border-b border-slate-100 bg-brand-paper px-6 py-6 sm:px-8">
           <Image
-            src="/brand/tt-logo.png"
+            src="/brand/tt-logo.webp"
             alt="The Travel Technician"
             width={280}
             height={80}

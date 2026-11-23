@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPublishedAppRows, slugifyAppName } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
+// Public catalog page: cached and regenerated every 5 minutes (ISR).
+export const revalidate = 300;
 export const metadata: Metadata = { title: "All apps" };
 
 /**
@@ -11,14 +12,10 @@ export const metadata: Metadata = { title: "All apps" };
  * Uses the free-text us_app_name until the canonical `apps` table is populated.
  */
 export default async function AppsIndexPage() {
-  const supabase = createSupabaseServerClient();
-  const { data } = await supabase
-    .from("country_apps")
-    .select("us_app_name, country_id, countries!inner(status)")
-    .eq("countries.status", "published");
+  const rows = await getPublishedAppRows();
 
   const counts = new Map<string, number>();
-  for (const row of (data as any[]) ?? []) {
+  for (const row of rows) {
     counts.set(row.us_app_name, (counts.get(row.us_app_name) ?? 0) + 1);
   }
   const apps = Array.from(counts.entries()).sort((a, b) => a[0].localeCompare(b[0]));
@@ -38,7 +35,7 @@ export default async function AppsIndexPage() {
           {apps.map(([name, count]) => (
             <Link
               key={name}
-              href={`/apps/${encodeURIComponent(name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""))}`}
+              href={`/apps/${encodeURIComponent(slugifyAppName(name))}`}
               className="rounded-xl border border-slate-200 bg-white p-4 hover:border-brand-accent"
             >
               <p className="font-semibold text-slate-900">{name}</p>

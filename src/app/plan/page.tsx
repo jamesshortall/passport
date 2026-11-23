@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Trip Planner" };
 export default async function PlanPage() {
   const countries = await getPublishedCountries();
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("country_apps")
     .select(

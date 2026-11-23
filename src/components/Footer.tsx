@@ -1,18 +1,18 @@
 import Link from "next/link";
 import Image from "next/image";
 import { SITE } from "@/lib/constants";
-import { getSessionUser } from "@/lib/auth";
+import { AuthOnly } from "./AuthNav";
 
-export default async function Footer() {
-  const user = await getSessionUser();
-
+/** Site footer. No server-side session read (pages are cached); the
+ *  signed-in-only Support link resolves in the browser via <AuthOnly />. */
+export default function Footer() {
   return (
     <footer className="mt-16 border-t border-slate-200 bg-white">
       <div className="mx-auto max-w-5xl px-4 py-10 text-sm">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
             <Image
-              src="/brand/tt-logo.png"
+              src="/brand/tt-logo.webp"
               alt="The Travel Technician"
               width={300}
               height={88}
@@ -52,13 +52,13 @@ export default async function Footer() {
                   Also check out Cardmaster →
                 </a>
               </li>
-              {user && (
+              <AuthOnly>
                 <li>
                   <Link href="/support" className="hover:text-brand-navy">
                     Support Center
                   </Link>
                 </li>
-              )}
+              </AuthOnly>
             </ul>
           </div>
 

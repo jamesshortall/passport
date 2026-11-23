@@ -11,7 +11,7 @@ export default function CardmasterCTA() {
     <aside className="overflow-hidden rounded-2xl border border-brand-gold/40 bg-gradient-to-b from-brand-gold/10 to-white shadow-sm">
       <div className="border-b border-brand-gold/20 bg-brand-navy px-5 py-4">
         <Image
-          src="/brand/cardmaster.png"
+          src="/brand/cardmaster.webp"
           alt="Cardmaster — powered by The Travel Technician"
           width={320}
           height={200}

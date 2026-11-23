@@ -1,7 +1,7 @@
 -- ==========================================================================
 -- AppPassport — combined migration script (apply once, top to bottom).
 -- Paste into the Supabase SQL Editor for the AppPassport project and Run.
--- Equivalent to running migrations/0001..0007 in order.
+-- Equivalent to running migrations/0001..0010 in order.
 -- ==========================================================================
 
 -- ----- migrations/0001_schema.sql -----
@@ -691,5 +691,109 @@ create policy country_heroes_admin_write on storage.objects
   for all
   using (bucket_id = 'country-heroes' and public.is_admin())
   with check (bucket_id = 'country-heroes' and public.is_admin());
+
+
+-- ----- migrations/0008_profile_insert_pin.sql -----
+-- Pin role / approval status on self-inserted profiles: a user may never
+-- insert their own row as admin/approved.
+drop policy if exists profiles_insert_own on public.profiles;
+create policy profiles_insert_own on public.profiles
+  for insert with check (
+    user_id = auth.uid()
+    and role = 'user'
+    and approval_status = 'pending'
+    and reviewed_by is null
+    and reviewed_at is null
+  );
+
+
+-- ----- migrations/0009_rate_limits.sql -----
+-- Fixed-window rate limiting for public edge functions (service role only).
+create table if not exists public.rate_limits (
+  key          text primary key,
+  window_start timestamptz not null default now(),
+  count        integer not null default 0
+);
+
+alter table public.rate_limits enable row level security;
+
+create or replace function public.consume_rate_limit(
+  p_key text,
+  p_limit integer,
+  p_window_seconds integer
+) returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_now   timestamptz := now();
+  v_count integer;
+begin
+  insert into public.rate_limits as r (key, window_start, count)
+  values (p_key, v_now, 1)
+  on conflict (key) do update
+    set count = case
+          when r.window_start + make_interval(secs => p_window_seconds) <= v_now then 1
+          else r.count + 1
+        end,
+        window_start = case
+          when r.window_start + make_interval(secs => p_window_seconds) <= v_now then v_now
+          else r.window_start
+        end
+  returning count into v_count;
+
+  return v_count <= p_limit;
+end;
+$$;
+
+revoke all on function public.consume_rate_limit(text, integer, integer) from public, anon, authenticated;
+grant execute on function public.consume_rate_limit(text, integer, integer) to service_role;
+
+create or replace function public.purge_rate_limits(p_older_than_seconds integer default 86400)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from public.rate_limits
+  where window_start < now() - make_interval(secs => p_older_than_seconds);
+$$;
+
+revoke all on function public.purge_rate_limits(integer) from public, anon, authenticated;
+grant execute on function public.purge_rate_limits(integer) to service_role;
+
+
+-- ----- migrations/0010_reports_rate_limit.sql -----
+-- Throttle anonymous "report outdated" submissions: max 5 per entry per minute.
+create or replace function public.reports_rate_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  reports_per_minute constant integer := 5;
+  recent integer;
+begin
+  if new.country_apps_id is null then
+    return new;
+  end if;
+  select count(*) into recent
+  from public.reports
+  where country_apps_id = new.country_apps_id
+    and created_at > now() - interval '1 minute';
+  if recent >= reports_per_minute then
+    raise exception 'Too many reports for this entry right now — please try again in a minute.'
+      using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists reports_rate_limit_trg on public.reports;
+create trigger reports_rate_limit_trg
+  before insert on public.reports
+  for each row execute function public.reports_rate_limit();
 
 

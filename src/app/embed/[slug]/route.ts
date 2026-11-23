@@ -1,8 +1,17 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabasePublicClient } from "@/lib/supabase/public";
+import { getPublishedSlugs } from "@/lib/queries";
 import { SITE, SEVERITY_META } from "@/lib/constants";
 import type { Severity } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+// Public, cookie-less widget: pre-built for published slugs, cached and
+// regenerated every 5 minutes; unknown slugs render on first request.
+export const revalidate = 300;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const slugs = await getPublishedSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 function esc(s: string) {
   return s.replace(/[&<>"]/g, (c) =>
@@ -15,25 +24,27 @@ function esc(s: string) {
  * Renders a compact "Apps you'll need" card (severity tags only), links back to
  * the full country page, and carries a "Powered by The Travel Technician"
  * credit. No React, no login required, minimal bytes.
+ *
+ * Framing: next.config.mjs sends `Content-Security-Policy: frame-ancestors *`
+ * for /embed/* (and no X-Frame-Options) so any site can iframe this.
  */
 export async function GET(
-  request: Request,
-  { params }: { params: { slug: string } }
+  _request: Request,
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const supabase = createSupabaseServerClient();
+  const { slug } = await params;
+  const supabase = createSupabasePublicClient();
 
   const { data: country } = await supabase
     .from("countries")
     .select("id, name, slug, flag_emoji, status")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
 
   const headers = {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "public, max-age=300",
-    // Allow embedding anywhere (this is a public widget by design).
-    "X-Frame-Options": "ALLOWALL",
   };
 
   if (!country) {
@@ -47,24 +58,25 @@ export async function GET(
     .from("country_apps")
     .select("us_app_name, local_alternative_name, severity")
     .eq("country_id", country.id)
-    .order("severity");
+    .order("severity")
+    .limit(200);
 
   const rows = (apps as { us_app_name: string; local_alternative_name: string | null; severity: Severity }[]) ?? [];
 
   const items = rows
     .map((a) => {
-      const meta = SEVERITY_META[a.severity];
+      const dot = SEVERITY_META[a.severity]?.dot ?? "";
       const alt = a.local_alternative_name
         ? ` → <strong>${esc(a.local_alternative_name)}</strong>`
         : "";
       return `<li style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #eee">
-        <span>${meta.dot}</span>
+        <span>${dot}</span>
         <span style="flex:1">${esc(a.us_app_name)}${alt}</span>
       </li>`;
     })
     .join("");
 
-  const countryUrl = `${SITE.url}/country/${country.slug}`;
+  const countryUrl = `${SITE.url}/country/${encodeURIComponent(country.slug)}`;
 
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -73,7 +85,7 @@ export async function GET(
 <body style="margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif;color:#0f2a43">
   <div style="border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;max-width:360px">
     <div style="background:#0f2a43;color:#fff;padding:12px 14px;font-weight:700">
-      ${country.flag_emoji ?? ""} Apps you'll need in ${esc(country.name)}
+      ${esc(country.flag_emoji ?? "")} Apps you'll need in ${esc(country.name)}
     </div>
     <ul style="list-style:none;margin:0;padding:8px 14px">${items || "<li style='padding:8px 0;color:#64748b'>No data yet</li>"}</ul>
     <a href="${countryUrl}" target="_blank" rel="noopener"
