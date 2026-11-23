@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 120" role="img" aria-label="AppPassport by The Travel Technician">
+  <defs>
+    <linearGradient id="l-navy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#163a5c"/>
+      <stop offset="1" stop-color="#0d2438"/>
+    </linearGradient>
+    <linearGradient id="l-cover" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eaf1f4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mark -->
+  <g transform="translate(6 12) scale(0.1875)">
+    <rect width="512" height="512" rx="116" fill="url(#l-navy)"/>
+    <circle cx="452" cy="70" r="150" fill="#1f8fa8" opacity="0.16"/>
+    <path d="M96 392 Q 232 300 372 150" fill="none" stroke="#3bb0c9" stroke-width="9"
+          stroke-linecap="round" stroke-dasharray="2 20"/>
+    <g transform="rotate(38 384 150)">
+      <path d="M384 128 L400 150 L384 172 L378 172 L386 152 L360 156 L354 150 L360 144 L386 148 L378 128 Z" fill="#3bb0c9"/>
+    </g>
+    <g transform="rotate(-8 256 270)">
+      <rect x="150" y="142" width="212" height="262" rx="26" fill="url(#l-cover)"/>
+      <rect x="150" y="142" width="30" height="262" rx="14" fill="#d7e2e8"/>
+      <rect x="150" y="142" width="10" height="262" rx="5" fill="#c2d1d9"/>
+      <g transform="translate(262 244)" stroke="#1f8fa8" fill="none" stroke-width="9" stroke-linecap="round">
+        <circle r="60"/>
+        <ellipse rx="27" ry="60" stroke-width="7"/>
+        <line x1="-60" y1="0" x2="60" y2="0" stroke-width="7"/>
+        <path d="M-54 -28 H54 M-54 28 H54" stroke-width="6"/>
+      </g>
+      <rect x="206" y="336" width="112" height="14" rx="7" fill="#1f8fa8"/>
+      <rect x="220" y="360" width="84" height="10" rx="5" fill="#b9c7cf"/>
+      <g transform="rotate(-14 318 190)">
+        <circle cx="318" cy="190" r="34" fill="none" stroke="#c8a24a" stroke-width="6" stroke-dasharray="3 9"/>
+        <path d="M318 172 l5 11 12 1 -9 8 3 12 -11 -7 -11 7 3 -12 -9 -8 12 -1 Z" fill="#c8a24a"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="120" y="64" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif"
+        font-size="46" font-weight="800" letter-spacing="-1">
+    <tspan fill="#0f2a43">App</tspan><tspan fill="#1f8fa8">Passport</tspan>
+  </text>
+  <text x="122" y="90" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif"
+        font-size="13.5" font-weight="600" letter-spacing="3" fill="#8091a0">
+    BY THE TRAVEL TECHNICIAN
+  </text>
+</svg>
